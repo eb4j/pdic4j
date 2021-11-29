@@ -1,115 +1,85 @@
-package io.github.eb4j.ebview.dictionary.pdic;
+/*
+ * PDIC4j, a PDIC dictionary access library.
+ * Copyright (C) 2021 Hiroshi Miura.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import io.github.eb4j.ebview.data.DictionaryEntry;
-import io.github.eb4j.ebview.data.IDictionary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package io.github.eb4j.pdic;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
-public class PdicDictionary implements IDictionary {
-
-    static final Logger LOG = LoggerFactory.getLogger(PdicDictionary.class.getName());
-
+public class PdicDictionary {
     private final File srcFile;
     private final String cachePath;
-    private PdicInfo dicInfo;
+    private final PdicInfo dicInfo;
 
-    public PdicDictionary(final File file) throws IOException {
-        this.srcFile = file;
-        cachePath = file.getPath() + ".idx";
+    public PdicDictionary(File srcFile, String cachePath, PdicInfo dicInfo) {
+        this.srcFile = srcFile;
+        this.cachePath = cachePath;
+        this.dicInfo = dicInfo;
+    }
+
+    public List<PdicElement> getEntries(final String word) {
+        List<PdicElement> result = null;
+        if (dicInfo.searchWord(word)) {
+            result = dicInfo.getResult();
+        }
+        return result;
+    }
+
+    public static PdicDictionary loadDictionary(final File file) throws IOException {
+        PdicInfo dicInfo;
+        String cachePath = file.getPath() + ".idx";
+        if (!file.isFile()) {
+            throw new IOException("Target file is not a file.");
+        }
         final int headerSize = 256;
         PdicHeader header; // ヘッダー
-
         ByteBuffer headerbuff = ByteBuffer.allocate(headerSize);
-        try (FileInputStream srcStream = new FileInputStream(srcFile);
+        try (FileInputStream srcStream = new FileInputStream(file);
              FileChannel srcChannel = srcStream.getChannel()) {
             int len = srcChannel.read(headerbuff);
             srcChannel.close();
-            if (len == headerSize) {
-                header = new PdicHeader();
-                if (header.load(headerbuff) != 0) {
-                    // Unicode辞書 かつ ver5以上のみ許容
-                    if ((header.version & 0xFF00) < 0x0500 || header.os != 0x20) {
-                        LOG.warn("Unsupported dictionary version" + srcFile.getName());
-                        throw new RuntimeException();
-                    }
-                    dicInfo = new PdicInfo(srcFile, header.header_size + header.extheader,
-                            header.block_size * header.index_block, header.nindex2, header.index_blkbit,
-                            header.block_size);
-                    if (!dicInfo.readIndexBlock(cachePath)) {
-                        LOG.warn("Failed to load dictionary index of " + srcFile.getName());
-                        throw new RuntimeException();
-                    }
-                    dicInfo.setDicName(file.getName());
-                }
+            if (len != headerSize) {
+                throw new RuntimeException("Failed to read dictionary.");
+            }
+            header = new PdicHeader();
+            if (header.load(headerbuff) == 0) {
+                throw new RuntimeException("Failed to read dictionary.");
+            }
+            // Unicode辞書 かつ ver5以上のみ許容
+            if ((header.version & 0xFF00) < 0x0500 || header.os != 0x20) {
+                throw new RuntimeException("Unsupported dictionary version");
+            }
+            dicInfo = new PdicInfo(file, header.header_size + header.extheader,
+                    header.block_size * header.index_block, header.nindex2, header.index_blkbit,
+                    header.block_size);
+            if (!dicInfo.readIndexBlock(cachePath)) {
+                throw new RuntimeException("Failed to load dictionary index");
             }
         }
-    }
-
-    @Override
-    public String getDictionaryName() {
-        return dicInfo.getDicName();
-    }
-
-    /**
-     * Read article's text.
-     *
-     * @param word The word to look up in the dictionary
-     * @return List of entries. May be empty, but cannot be null.
-     */
-    @Override
-    public List<DictionaryEntry> readArticles(final String word) {
-        List<DictionaryEntry> lists = new ArrayList<>();
-        if (dicInfo.searchWord(word.toLowerCase())) {
-            PdicResult result = dicInfo.getResult();
-            for (int i = 0; i < result.getCount(); i++) {
-                String disp = result.getDisp(i);
-                if (disp.equals("")) {
-                    disp = result.getIndex(i);
-                }
-                StringBuilder sb = new StringBuilder();
-                String phone = result.getPhone(i);
-                if (phone != null) {
-                    sb.append(phone).append(" / ");
-                }
-                sb.append(result.getTrans(i)).append("<br/>");
-                String sample = result.getSample(i);
-                if (sample != null) {
-                    sb.append(sample);
-                }
-                lists.add(new DictionaryEntry(disp, sb.toString(), getDictionaryName()));
-            }
-        }
-        return lists;
-    }
-
-    /**
-     * Read article's text. Matching is predictive, so e.g. supplying "term"
-     * will return articles for "term", "terminology", "termite", etc.
-     *
-     * @param word The word to look up in the dictionary
-     * @return List of entries. May be empty, but cannot be null.
-     */
-    @Override
-    public List<DictionaryEntry> readArticlesPredictive(final String word) {
-        return readArticles(word);
-    }
-
-    /**
-     * Dispose IDictionary. Default is no action.
-     */
-    @Override
-    public void close() {
+        dicInfo.setDicName(file.getName());
+        return new PdicDictionary(file, cachePath, dicInfo);
     }
 }

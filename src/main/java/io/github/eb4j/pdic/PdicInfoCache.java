@@ -1,4 +1,4 @@
-package io.github.eb4j.ebview.dictionary.pdic;
+package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
 

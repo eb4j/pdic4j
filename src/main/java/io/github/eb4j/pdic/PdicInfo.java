@@ -1,4 +1,22 @@
-package io.github.eb4j.ebview.dictionary.pdic;
+/*
+ * PDIC4j, a PDIC dictionary access library.
+ * Copyright (C) 2021 Hiroshi Miura.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
 import org.apache.commons.lang3.ArrayUtils;
@@ -13,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.WeakHashMap;
 
 /**
@@ -23,7 +43,7 @@ import java.util.WeakHashMap;
 class PdicInfo {
     protected File m_file;
     protected int m_bodyptr;
-    protected PdicResult mSearchResult;
+    protected List<PdicElement> mSearchResult = new ArrayList<>();
 
     protected int m_start;
     protected int m_size;
@@ -57,7 +77,6 @@ class PdicInfo {
         m_blocksize = blocksize;
         m_searchmax = 10;
 
-        mSearchResult = new PdicResult();
         mPhoneCharset = CharsetICU.forNameICU("BOCU-1");
         mMainCharset = CharsetICU.forNameICU("BOCU-1");
         try {
@@ -321,11 +340,11 @@ class PdicInfo {
         return false;
     }
 
-    PdicResult getResult() {
+    List<PdicElement> getResult() {
         return mSearchResult;
     }
 
-    public PdicResult getMoreResult() {
+    public List<PdicElement> getMoreResult() {
         mSearchResult.clear();
         if (mAnalyze != null) {
             int cnt = 0;
