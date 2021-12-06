@@ -35,8 +35,8 @@ public final class DictionaryDataBuilder<T> {
      * build DictionaryData POJO.
      * @return DictionaryData immutable object.
      */
-    public io.github.eb4j.dsl.DictionaryData<T> build() {
-        return new io.github.eb4j.dsl.DictionaryData<>(temp);
+    public DictionaryData<T> build() {
+        return new DictionaryData<>(temp);
     }
 
     /**
