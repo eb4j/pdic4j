@@ -14,7 +14,8 @@ plugins {
     id("com.diffplug.spotless") version "6.0.0"
     id("com.github.kt3k.coveralls") version "2.12.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-    id("com.palantir.git-version") version "0.12.3" apply false
+    id("com.palantir.git-version") version "0.12.3"
+    id("kr.motd.sphinx") version "2.10.0"
 }
 
 group = "io.github.eb4j"
@@ -73,106 +74,74 @@ java {
     withJavadocJar()
 }
 
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+val details = versionDetails()
+val baseVersion = details.lastTag.substring(1)
+if (details.isCleanTag) {  // release version
+    version = baseVersion
+} else {  // snapshot version
+    version = baseVersion + "-" + details.commitDistance + "-" + details.gitHash + "-SNAPSHOT"
+}
 
-// we handle cases without .git directory
-val home = System.getProperty("user.home")
-val javaHome = System.getProperty("java.home")
-val props = project.file("src/main/resources/version.properties")
-val dotgit = project.file(".git")
-
-if (dotgit.exists()) {
-    apply(plugin = "com.palantir.git-version")
-    val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
-    val details = versionDetails()
-    val baseVersion = details.lastTag.substring(1)
-    if (details.isCleanTag) {  // release version
-        version = baseVersion
-    } else {  // snapshot version
-        version = baseVersion + "-" + details.commitDistance + "-" + details.gitHash + "-SNAPSHOT"
-    }
-
-    publishing {
-        publications {
-            create<MavenPublication>("mavenJava") {
-                from(components["java"])
-                pom {
-                    name.set("URL protocol handler")
-                    description.set("LingoDSL parser for java")
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            pom {
+                name.set("URL protocol handler")
+                description.set("LingoDSL parser for java")
+                url.set("https://github.com/eb4j/dsl4j")
+                licenses {
+                    license {
+                        name.set("The GNU General Public License, Version 3")
+                        url.set("https://www.gnu.org/licenses/licenses/gpl-3.html")
+                        distribution.set("repo")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("miurahr")
+                        name.set("Hiroshi Miura")
+                        email.set("miurahr@linux.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/eb4j/dsl4j.git")
+                    developerConnection.set("scm:git:git://github.com/eb4j/dsl4j.git")
                     url.set("https://github.com/eb4j/dsl4j")
-                    licenses {
-                        license {
-                            name.set("The GNU General Public License, Version 3")
-                            url.set("https://www.gnu.org/licenses/licenses/gpl-3.html")
-                            distribution.set("repo")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("miurahr")
-                            name.set("Hiroshi Miura")
-                            email.set("miurahr@linux.com")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:git://github.com/eb4j/dsl4j.git")
-                        developerConnection.set("scm:git:git://github.com/eb4j/dsl4j.git")
-                        url.set("https://github.com/eb4j/dsl4j")
-                    }
                 }
             }
         }
     }
-
-    signing {
-        if (project.hasProperty("signingKey")) {
-            val signingKey: String? by project
-            val signingPassword: String? by project
-            useInMemoryPgpKeys(signingKey, signingPassword)
-        } else {
-            useGpgCmd()
-        }
-        sign(publishing.publications["mavenJava"])
-    }
-
-    tasks.withType<Sign> {
-        val hasKey = project.hasProperty("signingKey") || project.hasProperty("signing.gnupg.keyName")
-        onlyIf { hasKey && details.isCleanTag }
-    }
-
-    nexusPublishing {
-        repositories {
-            sonatype {
-                nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-                snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-                username.set(System.getenv("SONATYPE_USER"))
-                password.set(System.getenv("SONATYPE_PASS"))
-            }
-        }
-    }
-} else if (props.exists()) { // when version.properties already exist, just use it.
-
-    fun getProps(f: File): Properties {
-        val props = Properties()
-        try {
-            props.load(FileInputStream(f))
-        } catch (t: Throwable) {
-            println("Can't read $f: $t, assuming empty")
-        }
-        return props
-    }
-
-    version = getProps(props).getProperty("version")
 }
 
-tasks.register("writeVersionFile") {
-    val folder = project.file("src/main/resources")
-    if (!folder.exists()) {
-        folder.mkdirs()
+signing {
+    if (project.hasProperty("signingKey")) {
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    } else {
+        useGpgCmd()
     }
-    props.delete()
-    props.appendText("version=" + project.version)
+    sign(publishing.publications["mavenJava"])
 }
 
-tasks.getByName("jar") {
-    dependsOn("writeVersionFile")
+tasks.withType<Sign> {
+    val hasKey = project.hasProperty("signingKey") || project.hasProperty("signing.gnupg.keyName")
+    onlyIf { hasKey && details.isCleanTag }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username.set(System.getenv("SONATYPE_USER"))
+            password.set(System.getenv("SONATYPE_PASS"))
+        }
+    }
+}
+
+tasks.sphinx {
+    sourceDirectory {"docs"}
 }

@@ -1,20 +1,17 @@
-PDIC/Unicode specification
---------------------------
+# PDIC/Unicode specification
 
-A specification here is published by PDIC author in MS word 98 format(doc).
+A specification here is published by PDIC author in MS word format(doc).
 
-Markdown version
-----------------
+## Restructured text version
 
-Markdown version of the specification is converted from original MS word 98 format
+Markdown version of the specification is converted from original format
 using following tools.
 
 - doc to odf: libreoffice 7.0
-- odf to markdown: pandoc
+- odf to restructured text: pandoc
 - hankaku kana to zenkaku: nkf
 
-Copyright and license of the specification
-------------------------------------------
+## Copyright and license of the specification
 
 * この文書の著作権はTaN([sgm00353\@nifty.ne.jp)](mailto:sgm00353@nifty.ne.jp)にあります)。
 * この文書は内容を改変しない限り、フリーであり、再配布は自由です。
