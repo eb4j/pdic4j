@@ -97,9 +97,9 @@ publishing {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
             pom {
-                name.set("URL protocol handler")
-                description.set("LingoDSL parser for java")
-                url.set("https://github.com/eb4j/dsl4j")
+                name.set("PDIC4j")
+                description.set("PDIC access library for java")
+                url.set("https://github.com/eb4j/pdic4j")
                 licenses {
                     license {
                         name.set("The GNU General Public License, Version 3")
@@ -115,9 +115,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/eb4j/dsl4j.git")
-                    developerConnection.set("scm:git:git://github.com/eb4j/dsl4j.git")
-                    url.set("https://github.com/eb4j/dsl4j")
+                    connection.set("scm:git:git://github.com/eb4j/pdic4j.git")
+                    developerConnection.set("scm:git:git://github.com/eb4j/pdic4j.git")
+                    url.set("https://github.com/eb4j/pdic4j")
                 }
             }
         }
