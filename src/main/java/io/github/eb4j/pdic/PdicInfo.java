@@ -42,7 +42,7 @@ import java.util.WeakHashMap;
 @SuppressWarnings("membername")
 class PdicInfo {
     protected File file;
-    protected int mBodyptr;
+    protected int bodyPtr;
     protected List<PdicElement> searchResults = new ArrayList<>();
 
     protected int start;
@@ -61,7 +61,7 @@ class PdicInfo {
     protected WeakHashMap<String, ByteBuffer> enchdeCache = new WeakHashMap<>();
 
     protected AnalyzeBlock analyze;
-    protected int mLastIndex = 0;
+    protected int lastIndex = 0;
     protected PdicInfoCache pdicInfoCache;
 
     private RandomAccessFile sourceStream = null;
@@ -149,7 +149,7 @@ class PdicInfo {
      */
     public boolean readIndexBlock(final File indexcache) {
         if (sourceStream != null) {
-            mBodyptr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
+            bodyPtr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
             if (indexcache != null) {
                 try (FileInputStream fis = new FileInputStream(indexcache)) {
                     byte[] buff = new byte[(nIndex + 1) * 4];
@@ -217,7 +217,7 @@ class PdicInfo {
      */
     public int getBlockNo(final int num) {
         int blkptr = indexPtr[num] - blockBits;
-        mLastIndex = num;
+        lastIndex = num;
         if (blockBits == 4) {
             return pdicInfoCache.getInt(blkptr);
         } else {
@@ -286,7 +286,7 @@ class PdicInfo {
                     analyze.setSearch(word);
                     searchret = analyze.searchWord();
                     // 未発見でEOBの時のみもう一回、回る
-                    if (!searchret && analyze.mEob) {
+                    if (!searchret && analyze.eob) {
                         continue;
                     }
                 }
@@ -365,7 +365,7 @@ class PdicInfo {
         boolean result = analyze.hasMoreResult(incrementptr);
         if (!result) {
             if (analyze.isEob()) {    // EOBなら次のブロック読み出し
-                int nextindex = mLastIndex + 1;
+                int nextindex = lastIndex + 1;
                 // 最終ブロックは超えない
                 if (nextindex < nIndex) {
                     int block = getBlockNo(nextindex);
@@ -393,7 +393,7 @@ class PdicInfo {
         byte[] buff = new byte[0x200];
         byte[] pbuf = buff;
         try {
-            sourceStream.seek(mBodyptr + (long) blkno * blocksize);
+            sourceStream.seek(bodyPtr + (long) blkno * blocksize);
 
             // 1ブロック分読込(１セクタ分先読み)
             if (sourceStream.read(pbuf, 0, 0x200) < 0) {
@@ -427,26 +427,26 @@ class PdicInfo {
     }
 
     final class AnalyzeBlock {
-        private byte[] mBuff;
-        private boolean mLongfield;
+        private byte[] buff;
+        private boolean longField;
         private byte[] mWord;
-        private int mFoundPtr = -1;
-        private int mNextPtr = -1;
-        private final byte[] mCompbuff = new byte[1024];
-        private int mCompLen = 0;
-        private boolean mEob = false;
+        private int foundPtr = -1;
+        private int nextPtr = -1;
+        private final byte[] compBuff = new byte[1024];
+        private int compLen = 0;
+        private boolean eob = false;
 
         AnalyzeBlock() {
         }
 
         public void setBuffer(final byte[] buff) {
-            mBuff = buff;
-            mLongfield = ((buff[1] & 0x80) != 0);
+            this.buff = buff;
+            longField = ((buff[1] & 0x80) != 0);
             ByteBuffer mBB = ByteBuffer.wrap(buff);
             mBB.order(ByteOrder.LITTLE_ENDIAN);
-            mNextPtr = 2;
-            mEob = false;
-            mCompLen = 0;
+            nextPtr = 2;
+            eob = false;
+            compLen = 0;
         }
 
         public void setSearch(final String word) {
@@ -457,7 +457,7 @@ class PdicInfo {
         }
 
         public boolean isEob() {
-            return mEob;
+            return eob;
         }
 
         /**
@@ -465,16 +465,16 @@ class PdicInfo {
          */
         public boolean searchWord() {
             final byte[] bytes = mWord;
-            final byte[] buff = mBuff;
-            final boolean longfield = mLongfield;
-            final byte[] compbuff = mCompbuff;
+            final byte[] buff = this.buff;
+            final boolean longfield = longField;
+            final byte[] compbuff = compBuff;
             final int wordlen = bytes.length;
 
-            mFoundPtr = -1;
+            foundPtr = -1;
 
             // 訳語データ読込
-            int ptr = mNextPtr;
-            mNextPtr = -1;
+            int ptr = nextPtr;
+            nextPtr = -1;
             while (true) {
                 int flen = 0;
                 int retptr = ptr;
@@ -497,7 +497,7 @@ class PdicInfo {
                     flen |= (b & 0x7F000000);
                 }
                 if (flen == 0) {
-                    mEob = true;
+                    eob = true;
                     break;
                 }
                 int qtr = ptr;
@@ -539,9 +539,9 @@ class PdicInfo {
                     }
                 }
                 if (equal) {
-                    mFoundPtr = retptr;
-                    mNextPtr = ptr;
-                    mCompLen = complen - 1;
+                    foundPtr = retptr;
+                    nextPtr = ptr;
+                    compLen = complen - 1;
                     return true;
                 }
             }
@@ -554,11 +554,11 @@ class PdicInfo {
          * @return search result
          */
         PdicElement getRecord() {
-            if (mFoundPtr == -1) {
+            if (foundPtr == -1) {
                 return null;
             }
             final PdicElement.PdicElementBuilder res = new PdicElement.PdicElementBuilder();
-            String indexstr = decodetoCharBuffer(mainCharset, mCompbuff, 0, mCompLen).toString();
+            String indexstr = decodetoCharBuffer(mainCharset, compBuff, 0, compLen).toString();
             res.setIndex(indexstr);
             // ver6対応 見出し語が、<検索インデックス><TAB><表示用文字列>の順に
             // 設定されていてるので、分割する。
@@ -571,12 +571,12 @@ class PdicInfo {
                 res.setDisp(indexstr.substring(tab + 1));
             }
 
-            final byte[] buff = mBuff;
-            final boolean longfield = mLongfield;
+            final byte[] buff = this.buff;
+            final boolean longfield = longField;
             byte attr = 0;
 
             // 訳語データ読込
-            int ptr = mFoundPtr;
+            int ptr = foundPtr;
 
             if (longfield) {
                 ptr += 4;
@@ -622,7 +622,7 @@ class PdicInfo {
                 }
             } else {
                 // 残り全部が訳文
-                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, mNextPtr - qtr).toString().replace("\r", ""));
+                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr).toString().replace("\r", ""));
             }
             return res.build();
         }
@@ -630,12 +630,12 @@ class PdicInfo {
         // 次の項目が検索語に前方一致するかチェックする
         public boolean hasMoreResult(final boolean incrementptr) {
             byte[] word;
-            final byte[] buff = mBuff;
-            final boolean longfield = mLongfield;
-            final byte[] compbuff = mCompbuff;
+            final byte[] buff = this.buff;
+            final boolean longfield = longField;
+            final byte[] compbuff = compBuff;
 
             // next search
-            if (mFoundPtr == -1) {
+            if (foundPtr == -1) {
                 return false;
             }
             word = mWord;
@@ -643,7 +643,7 @@ class PdicInfo {
             int wordlen = word.length;
 
             // 訳語データ読込
-            int ptr = mNextPtr;
+            int ptr = nextPtr;
 
             int retptr = ptr;
             int flen;
@@ -666,7 +666,7 @@ class PdicInfo {
                 flen |= (b & 0x7F000000);
             }
             if (flen == 0) {
-                mEob = true;
+                eob = true;
                 return false;
             }
             int qtr = ptr;
@@ -705,9 +705,9 @@ class PdicInfo {
                 }
             }
             if (equal && incrementptr) {
-                mFoundPtr = retptr;
-                mNextPtr = ptr;
-                mCompLen = complen - 1;
+                foundPtr = retptr;
+                nextPtr = ptr;
+                compLen = complen - 1;
             }
             return equal;
         }
