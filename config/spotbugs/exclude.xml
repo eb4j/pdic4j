@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
   <Match>
-    <Source name="~.*/generated/.*\.java" />
+    <Class name="io.github.eb4j.pdic.PdicElement"/>
+    <Bug code="UrF"/>
   </Match>
   <Match>
-    <Class name="io.github.eb4j.pdic4j.*"/>
-    <Or>
-      <Bug code="EI"/>
-      <Bug code="EI2"/>
-    </Or>
+    <Class name="io.github.eb4j.pdic.PdicDictionary"/>
+    <Bug code="EI2"/>
   </Match>
 </FindBugsFilter>
