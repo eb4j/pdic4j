@@ -18,8 +18,6 @@
 
 package io.github.eb4j.pdic;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class PdicDictionaryTest {
 
 }

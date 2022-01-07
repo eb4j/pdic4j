@@ -595,9 +595,8 @@ class PdicInfo {
             // 見出し語属性 skip
             attr = buff[qtr++];
 
-            while (buff[qtr++] != 0) {
-                // 見出し語 skip
-            }
+            // 見出し語 skip
+            while (buff[qtr++] != 0) ;
 
             // 訳語
             if ((attr & 0x10) != 0) { // 拡張属性ありの時

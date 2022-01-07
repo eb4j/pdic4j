@@ -33,7 +33,7 @@ public class PdicDictionary {
     private final File srcFile;
     private final PdicInfo dicInfo;
 
-    public PdicDictionary(File srcFile, PdicInfo dicInfo) {
+    public PdicDictionary(final File srcFile, final PdicInfo dicInfo) {
         this.srcFile = srcFile;
         this.dicInfo = dicInfo;
     }
