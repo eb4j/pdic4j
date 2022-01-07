@@ -31,12 +31,10 @@ import java.util.List;
  */
 public class PdicDictionary {
     private final File srcFile;
-    private final String cachePath;
     private final PdicInfo dicInfo;
 
-    public PdicDictionary(File srcFile, String cachePath, PdicInfo dicInfo) {
+    public PdicDictionary(File srcFile, PdicInfo dicInfo) {
         this.srcFile = srcFile;
-        this.cachePath = cachePath;
         this.dicInfo = dicInfo;
     }
 
@@ -48,9 +46,8 @@ public class PdicDictionary {
         return result;
     }
 
-    public static PdicDictionary loadDictionary(final File file) throws IOException {
+    public static PdicDictionary loadDictionary(final File file, final File cacheFile) throws IOException {
         PdicInfo dicInfo;
-        String cachePath = file.getPath() + ".idx";
         if (!file.isFile()) {
             throw new IOException("Target file is not a file.");
         }
@@ -75,11 +72,11 @@ public class PdicDictionary {
             dicInfo = new PdicInfo(file, header.header_size + header.extheader,
                     header.block_size * header.index_block, header.nindex2, header.index_blkbit,
                     header.block_size);
-            if (!dicInfo.readIndexBlock(cachePath)) {
+            if (!dicInfo.readIndexBlock(cacheFile)) {
                 throw new RuntimeException("Failed to load dictionary index");
             }
         }
         dicInfo.setDicName(file.getName());
-        return new PdicDictionary(file, cachePath, dicInfo);
+        return new PdicDictionary(file, dicInfo);
     }
 }

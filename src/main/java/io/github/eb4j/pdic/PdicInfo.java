@@ -147,7 +147,7 @@ class PdicInfo {
      *
      * @return true when successfully read block, otherwise false.
      */
-    public boolean readIndexBlock(final String indexcache) {
+    public boolean readIndexBlock(final File indexcache) {
         if (mSrcStream != null) {
             m_bodyptr = m_start + m_size; // 本体位置=( index開始位置＋インデックスのサイズ)
             if (indexcache != null) {
