@@ -1,0 +1,32 @@
+name: Publish github pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/publish-gh-pages.yml'
+
+jobs:
+  publish-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2.5.0
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+      - uses: gradle/gradle-build-action@v2.1.0
+      - run: ./gradlew sphinx
+      - run: ./gradlew javadoc
+      - name: gather document artifacts to ./public/
+        run: |
+          mkdir -p public
+          cp -r build/docs/* public/
+          cp -r build/site/* public/
+      - name: Deploy documents to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: public/
