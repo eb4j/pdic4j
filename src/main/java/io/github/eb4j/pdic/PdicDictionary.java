@@ -30,11 +30,9 @@ import java.util.List;
  * @author Hiroshi Miura
  */
 public class PdicDictionary {
-    private final File srcFile;
     private final PdicInfo dicInfo;
 
-    public PdicDictionary(final File srcFile, final PdicInfo dicInfo) {
-        this.srcFile = srcFile;
+    public PdicDictionary(final PdicInfo dicInfo) {
         this.dicInfo = dicInfo;
     }
 
@@ -77,6 +75,6 @@ public class PdicDictionary {
             }
         }
         dicInfo.setDicName(file.getName());
-        return new PdicDictionary(file, dicInfo);
+        return new PdicDictionary(dicInfo);
     }
 }

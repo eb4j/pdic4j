@@ -12,37 +12,37 @@ import java.util.WeakHashMap;
  * @author Hiroshi Miura
  */
 class PdicInfoCache {
-    private final boolean mFix;
-    private final int mBlockSize;
-    private final RandomAccessFile mFile;
-    private final int mStart;
-    private final int mSize;
+    private final boolean fix;
+    private final int blockSize;
+    private final RandomAccessFile randomAccessFile;
+    private final int start;
+    private final int size;
     private final WeakHashMap<Integer, WeakReference<byte[]>> mMap = new WeakHashMap<>();
-    private byte[] mFixedBuffer;
+    private byte[] fixedBuffer;
 
     PdicInfoCache(final RandomAccessFile file, final int start, final int size) {
-        mFile = file;
-        mStart = start;
-        mSize = size;
-        if (mSize < 1024 * 512) {
-            mFix = true;
-            mBlockSize = mSize;
+        randomAccessFile = file;
+        this.start = start;
+        this.size = size;
+        if (this.size < 1024 * 512) {
+            fix = true;
+            blockSize = this.size;
         } else {
-            mFix = false;
-            mBlockSize = 1024;
+            fix = false;
+            blockSize = 1024;
         }
     }
 
     byte[] getSegment(final int segment) {
         byte[] segmentdata = null;
 
-        if (mFix) {
-            if (mFixedBuffer == null) {
-                mFixedBuffer = new byte[mSize];
+        if (fix) {
+            if (fixedBuffer == null) {
+                fixedBuffer = new byte[size];
                 try {
-                    mFile.seek(mStart);
-                    if (mFile.read(mFixedBuffer, 0, mSize) >= 0) {
-                        return mFixedBuffer;
+                    randomAccessFile.seek(start);
+                    if (randomAccessFile.read(fixedBuffer, 0, size) >= 0) {
+                        return fixedBuffer;
                     }
                 } catch (IOException ignored) {
                 }
@@ -54,11 +54,11 @@ class PdicInfoCache {
             segmentdata = ref.get();
         }
         if (segmentdata == null) {
-            segmentdata = new byte[mBlockSize];
+            segmentdata = new byte[blockSize];
             try {
-                mFile.seek(mStart + (long) segment * mBlockSize);
-                int len = mFile.read(segmentdata, 0, mBlockSize);
-                if (len == mBlockSize || len == mSize % mBlockSize) {
+                randomAccessFile.seek(start + (long) segment * blockSize);
+                int len = randomAccessFile.read(segmentdata, 0, blockSize);
+                if (len == blockSize || len == size % blockSize) {
                     mMap.put(segment, new WeakReference<>(segmentdata));
                 } else {
                     return null;
@@ -72,8 +72,8 @@ class PdicInfoCache {
 
 
     public int getShort(final int ptr) {
-        int segment = ptr / mBlockSize;
-        int address = ptr % mBlockSize;
+        int segment = ptr / blockSize;
+        int address = ptr % blockSize;
         byte[] segmentdata = getSegment(segment++);
 
         int dat = 0;
@@ -83,8 +83,8 @@ class PdicInfoCache {
             b &= 0xFF;
             dat |= b;
 
-            if (address >= mBlockSize) {
-                address %= mBlockSize;
+            if (address >= blockSize) {
+                address %= blockSize;
                 segmentdata = getSegment(segment);
             }
             b = segmentdata[address];
@@ -95,8 +95,8 @@ class PdicInfoCache {
     }
 
     public int getInt(final int ptr) {
-        int segment = ptr / mBlockSize;
-        int address = ptr % mBlockSize;
+        int segment = ptr / blockSize;
+        int address = ptr % blockSize;
         byte[] segmentdata = getSegment(segment++);
 
         int dat = 0;
@@ -105,22 +105,22 @@ class PdicInfoCache {
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= b;
-            if (address >= mBlockSize) {
-                address %= mBlockSize;
+            if (address >= blockSize) {
+                address %= blockSize;
                 segmentdata = getSegment(segment++);
             }
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= (b << 8);
-            if (address >= mBlockSize) {
-                address %= mBlockSize;
+            if (address >= blockSize) {
+                address %= blockSize;
                 segmentdata = getSegment(segment++);
             }
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= (b << 16);
-            if (address >= mBlockSize) {
-                address %= mBlockSize;
+            if (address >= blockSize) {
+                address %= blockSize;
                 segmentdata = getSegment(segment);
             }
             b = segmentdata[address];
@@ -166,8 +166,8 @@ class PdicInfoCache {
      */
     @SuppressWarnings("finalparameters")
     public int compare(final byte[] aa, final int pa, final int la, final int ptr, final int len) {
-        int segment = ptr / mBlockSize;
-        int address = ptr % mBlockSize;
+        int segment = ptr / blockSize;
+        int address = ptr % blockSize;
         byte[] segmentdata = getSegment(segment++);
 
         if (segmentdata == null) {
@@ -178,11 +178,11 @@ class PdicInfoCache {
             return 1;
         }
 
-        if (address + len < mBlockSize) {
+        if (address + len < blockSize) {
             PdicInfo.decodetoCharBuffer(CharsetICU.forNameICU("BOCU-1"), segmentdata, address, len);
             return compareArrayAsUnsigned(aa, pa, la, segmentdata, address, len);
         } else {
-            int lena = mBlockSize - address;
+            int lena = blockSize - address;
             int leno = Math.min(la, lena);
             int ret = compareArrayAsUnsigned(aa, pa, leno, segmentdata, address, lena);
             PdicInfo.decodetoCharBuffer(CharsetICU.forNameICU("BOCU-1"), segmentdata, address, lena);
