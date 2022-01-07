@@ -41,48 +41,48 @@ import java.util.WeakHashMap;
  */
 @SuppressWarnings("membername")
 class PdicInfo {
-    protected File m_file;
-    protected int m_bodyptr;
-    protected List<PdicElement> mSearchResult = new ArrayList<>();
+    protected File file;
+    protected int mBodyptr;
+    protected List<PdicElement> searchResults = new ArrayList<>();
 
-    protected int m_start;
-    protected int m_size;
-    protected int m_blockbits;
-    protected int m_nindex;
-    protected int m_blocksize;
-    protected boolean m_match;
-    protected int m_searchmax; // 最大検索件数
-    protected String m_dicname; // 辞書名
+    protected int start;
+    protected int size;
+    protected int blockBits;
+    protected int nIndex;
+    protected int blocksize;
+    protected boolean match;
+    protected int searchmax; // 最大検索件数
+    protected String dictName; // 辞書名
 
-    protected int[] mIndexPtr;
+    protected int[] indexPtr;
 
-    protected Charset mMainCharset;
-    protected Charset mPhoneCharset;
-    protected WeakHashMap<String, ByteBuffer> mEncodeCache = new WeakHashMap<>();
+    protected Charset mainCharset;
+    protected Charset phoneCharset;
+    protected WeakHashMap<String, ByteBuffer> enchdeCache = new WeakHashMap<>();
 
-    protected AnalyzeBlock mAnalyze;
+    protected AnalyzeBlock analyze;
     protected int mLastIndex = 0;
-    protected PdicInfoCache mPdicInfoCache;
+    protected PdicInfoCache pdicInfoCache;
 
-    private RandomAccessFile mSrcStream = null;
+    private RandomAccessFile sourceStream = null;
 
     @SuppressWarnings("avoidinlineconditionals")
     PdicInfo(final File file, final int start, final int size, final int nindex, final boolean blockbits,
              final int blocksize) {
-        m_file = file;
-        m_start = start;
-        m_size = size;
-        m_nindex = nindex;
-        m_blockbits = (blockbits) ? 4 : 2;
-        m_blocksize = blocksize;
-        m_searchmax = 10;
+        this.file = file;
+        this.start = start;
+        this.size = size;
+        nIndex = nindex;
+        blockBits = (blockbits) ? 4 : 2;
+        this.blocksize = blocksize;
+        searchmax = 10;
 
-        mPhoneCharset = CharsetICU.forNameICU("BOCU-1");
-        mMainCharset = CharsetICU.forNameICU("BOCU-1");
+        phoneCharset = CharsetICU.forNameICU("BOCU-1");
+        mainCharset = CharsetICU.forNameICU("BOCU-1");
         try {
-            mSrcStream = new RandomAccessFile(m_file, "r");
-            mAnalyze = new AnalyzeBlock();
-            mPdicInfoCache = new PdicInfoCache(mSrcStream, m_start, m_size);
+            sourceStream = new RandomAccessFile(this.file, "r");
+            analyze = new AnalyzeBlock();
+            pdicInfoCache = new PdicInfoCache(sourceStream, this.start, this.size);
         } catch (FileNotFoundException ignored) {
         }
     }
@@ -108,21 +108,21 @@ class PdicInfo {
      */
     public int searchIndexBlock(final String word) {
         int min = 0;
-        int max = m_nindex - 1;
+        int max = nIndex - 1;
 
-        ByteBuffer buffer = mEncodeCache.get(word);
+        ByteBuffer buffer = enchdeCache.get(word);
         if (buffer == null) {
-            buffer = encodetoByteBuffer(mMainCharset, word);
-            mEncodeCache.put(word, buffer);
+            buffer = encodetoByteBuffer(mainCharset, word);
+            enchdeCache.put(word, buffer);
         }
         int limit = buffer.limit();
         byte[] bytes = new byte[limit];
         System.arraycopy(buffer.array(), 0, bytes, 0, limit);
         int wordlen = bytes.length;
 
-        int[] indexPtr = mIndexPtr;
-        int blockbits = m_blockbits;
-        PdicInfoCache pdicInfoCache = mPdicInfoCache;
+        int[] indexPtr = this.indexPtr;
+        int blockbits = blockBits;
+        PdicInfoCache pdicInfoCache = this.pdicInfoCache;
 
         for (int i = 0; i < 32; i++) {
             if ((max - min) <= 1) {
@@ -148,16 +148,16 @@ class PdicInfo {
      * @return true when successfully read block, otherwise false.
      */
     public boolean readIndexBlock(final File indexcache) {
-        if (mSrcStream != null) {
-            m_bodyptr = m_start + m_size; // 本体位置=( index開始位置＋インデックスのサイズ)
+        if (sourceStream != null) {
+            mBodyptr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
             if (indexcache != null) {
                 try (FileInputStream fis = new FileInputStream(indexcache)) {
-                    byte[] buff = new byte[(m_nindex + 1) * 4];
+                    byte[] buff = new byte[(nIndex + 1) * 4];
                     int readlen = fis.read(buff);
                     if (readlen == buff.length) {
-                        final int indexlen = m_nindex;
-                        final int[] indexptr = new int[m_nindex + 1];
-                        mIndexPtr = indexptr;
+                        final int indexlen = nIndex;
+                        final int[] indexptr = new int[nIndex + 1];
+                        indexPtr = indexptr;
                         int ptr = 0;
                         for (int i = 0; i <= indexlen; i++) {
                             int b;
@@ -183,10 +183,10 @@ class PdicInfo {
             }
 
             // インデックスの先頭から見出し語のポインタを拾っていく
-            final int nindex = m_nindex;
+            final int nindex = nIndex;
             final int[] indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
-            mIndexPtr = indexPtr;
-            if (mPdicInfoCache.createIndex(m_blockbits, nindex, indexPtr)) {
+            this.indexPtr = indexPtr;
+            if (pdicInfoCache.createIndex(blockBits, nindex, indexPtr)) {
                 byte[] buff = new byte[indexPtr.length * 4];
                 int p = 0;
                 for (int c = 0; c <= nindex; c++) {
@@ -208,7 +208,7 @@ class PdicInfo {
                 return true;
             }
         }
-        mIndexPtr = null;
+        indexPtr = null;
         return false;
     }
 
@@ -216,12 +216,12 @@ class PdicInfo {
      * num個目の見出し語の実体が入っているブロック番号を返す.
      */
     public int getBlockNo(final int num) {
-        int blkptr = mIndexPtr[num] - m_blockbits;
+        int blkptr = indexPtr[num] - blockBits;
         mLastIndex = num;
-        if (m_blockbits == 4) {
-            return mPdicInfoCache.getInt(blkptr);
+        if (blockBits == 4) {
+            return pdicInfoCache.getInt(blkptr);
         } else {
-            return mPdicInfoCache.getShort(blkptr);
+            return pdicInfoCache.getShort(blkptr);
         }
     }
 
@@ -241,34 +241,34 @@ class PdicInfo {
     }
 
     boolean isMatch() {
-        return m_match;
+        return match;
     }
 
     public String getFilename() {
-        return m_file.getName();
+        return file.getName();
     }
 
     public int getSearchMax() {
-        return m_searchmax;
+        return searchmax;
     }
 
     public void setSearchMax(final int m) {
-        m_searchmax = m;
+        searchmax = m;
     }
 
     public void setDicName(final String b) {
-        m_dicname = b;
+        dictName = b;
     }
 
     public String getDicName() {
-        return m_dicname;
+        return dictName;
     }
 
     // 単語を検索する
     public boolean searchWord(final String word) {
         // 検索結果クリア
         int cnt = 0;
-        mSearchResult.clear();
+        searchResults.clear();
 
         int ret = searchIndexBlock(word);
 
@@ -277,16 +277,16 @@ class PdicInfo {
         boolean searchret = false;
         while (true) {
             // 最終ブロックは超えない
-            if (ret < m_nindex) {
+            if (ret < nIndex) {
                 // 該当ブロック読み出し
                 int block = getBlockNo(ret++);
                 byte[] pblk = readBlockData(block);
                 if (pblk != null) {
-                    mAnalyze.setBuffer(pblk);
-                    mAnalyze.setSearch(word);
-                    searchret = mAnalyze.searchWord();
+                    analyze.setBuffer(pblk);
+                    analyze.setSearch(word);
+                    searchret = analyze.searchWord();
                     // 未発見でEOBの時のみもう一回、回る
-                    if (!searchret && mAnalyze.mEob) {
+                    if (!searchret && analyze.mEob) {
                         continue;
                     }
                 }
@@ -297,19 +297,19 @@ class PdicInfo {
         if (searchret) {
             // 前方一致するものだけ結果に入れる
             do {
-                PdicElement res = mAnalyze.getRecord();
+                PdicElement res = analyze.getRecord();
                 if (res == null) {
                     break;
                 }
                 // 完全一致するかチェック
-                if (res.mIndex.compareTo(word) == 0) {
+                if (res.getIndex().compareTo(word) == 0) {
                     match = true;
                 }
-                mSearchResult.add(res);
+                searchResults.add(res);
 
                 cnt++;
                 // 取得最大件数超えたら打ち切り
-            } while (cnt < m_searchmax && hasMoreResult(true));
+            } while (cnt < searchmax && hasMoreResult(true));
         }
         return match;
     }
@@ -320,7 +320,7 @@ class PdicInfo {
 
         for (int blk = 0; blk < 2; blk++) {
             // 最終ブロックは超えない
-            if (ret + blk >= m_nindex) {
+            if (ret + blk >= nIndex) {
                 break;
             }
             int block = getBlockNo(ret + blk);
@@ -329,10 +329,10 @@ class PdicInfo {
             byte[] pblk = readBlockData(block);
 
             if (pblk != null) {
-                mAnalyze.setBuffer(pblk);
-                mAnalyze.setSearch(word);
+                analyze.setBuffer(pblk);
+                analyze.setSearch(word);
 
-                if (mAnalyze.searchWord()) {
+                if (analyze.searchWord()) {
                     return true;
                 }
             }
@@ -341,41 +341,41 @@ class PdicInfo {
     }
 
     List<PdicElement> getResult() {
-        return mSearchResult;
+        return searchResults;
     }
 
     public List<PdicElement> getMoreResult() {
-        mSearchResult.clear();
-        if (mAnalyze != null) {
+        searchResults.clear();
+        if (analyze != null) {
             int cnt = 0;
             // 前方一致するものだけ結果に入れる
-            while (cnt < m_searchmax && hasMoreResult(true)) {
-                PdicElement res = mAnalyze.getRecord();
+            while (cnt < searchmax && hasMoreResult(true)) {
+                PdicElement res = analyze.getRecord();
                 if (res == null) {
                     break;
                 }
-                mSearchResult.add(res);
+                searchResults.add(res);
                 cnt++;
             }
         }
-        return mSearchResult;
+        return searchResults;
     }
 
     public boolean hasMoreResult(final boolean incrementptr) {
-        boolean result = mAnalyze.hasMoreResult(incrementptr);
+        boolean result = analyze.hasMoreResult(incrementptr);
         if (!result) {
-            if (mAnalyze.isEob()) {    // EOBなら次のブロック読み出し
+            if (analyze.isEob()) {    // EOBなら次のブロック読み出し
                 int nextindex = mLastIndex + 1;
                 // 最終ブロックは超えない
-                if (nextindex < m_nindex) {
+                if (nextindex < nIndex) {
                     int block = getBlockNo(nextindex);
 
                     // 該当ブロック読み出し
                     byte[] pblk = readBlockData(block);
 
                     if (pblk != null) {
-                        mAnalyze.setBuffer(pblk);
-                        result = mAnalyze.hasMoreResult(incrementptr);
+                        analyze.setBuffer(pblk);
+                        result = analyze.hasMoreResult(incrementptr);
                     }
                 }
             }
@@ -393,10 +393,10 @@ class PdicInfo {
         byte[] buff = new byte[0x200];
         byte[] pbuf = buff;
         try {
-            mSrcStream.seek(m_bodyptr + (long) blkno * m_blocksize);
+            sourceStream.seek(mBodyptr + (long) blkno * blocksize);
 
             // 1ブロック分読込(１セクタ分先読み)
-            if (mSrcStream.read(pbuf, 0, 0x200) < 0) {
+            if (sourceStream.read(pbuf, 0, 0x200) < 0) {
                 return null;
             }
 
@@ -410,10 +410,10 @@ class PdicInfo {
             }
             if (len > 0) {
                 // ブロック不足分読込
-                if (len * m_blocksize > 0x200) {
-                    pbuf = new byte[m_blocksize * len];
+                if (len * blocksize > 0x200) {
+                    pbuf = new byte[blocksize * len];
                     System.arraycopy(buff, 0, pbuf, 0, 0x200);
-                    if (mSrcStream.read(pbuf, 0x200, len * m_blocksize - 0x200) < 0) {
+                    if (sourceStream.read(pbuf, 0x200, len * blocksize - 0x200) < 0) {
                         return null;
                     }
                 }
@@ -450,8 +450,8 @@ class PdicInfo {
         }
 
         public void setSearch(final String word) {
-            ByteBuffer buffer = encodetoByteBuffer(mMainCharset, word);
-            mEncodeCache.put(word, buffer);
+            ByteBuffer buffer = encodetoByteBuffer(mainCharset, word);
+            enchdeCache.put(word, buffer);
             mWord = new byte[buffer.limit()];
             System.arraycopy(buffer.array(), 0, mWord, 0, buffer.limit());
         }
@@ -557,20 +557,18 @@ class PdicInfo {
             if (mFoundPtr == -1) {
                 return null;
             }
-            final PdicElement res = new PdicElement();
-
-            res.mIndex = decodetoCharBuffer(mMainCharset, mCompbuff, 0, mCompLen).toString();
+            final PdicElement.PdicElementBuilder res = new PdicElement.PdicElementBuilder();
+            String indexstr = decodetoCharBuffer(mainCharset, mCompbuff, 0, mCompLen).toString();
+            res.setIndex(indexstr);
             // ver6対応 見出し語が、<検索インデックス><TAB><表示用文字列>の順に
             // 設定されていてるので、分割する。
             // それ以前のverではdispに空文字列を保持させる。
-
-            final String indexstr = res.mIndex;
             final int tab = indexstr.indexOf('\t');
             if (tab == -1) {
-                res.mDisp = "";
+                res.setDisp("");
             } else {
-                res.mIndex = indexstr.substring(0, tab);
-                res.mDisp = indexstr.substring(tab + 1);
+                res.setIndex(indexstr.substring(0, tab));
+                res.setDisp(indexstr.substring(tab + 1));
             }
 
             final byte[] buff = mBuff;
@@ -601,7 +599,7 @@ class PdicInfo {
             // 訳語
             if ((attr & 0x10) != 0) { // 拡張属性ありの時
                 int trnslen = getLengthToNextZero(buff, qtr);
-                res.mTrans = decodetoCharBuffer(mMainCharset, buff, qtr, trnslen).toString().replace("\r", "");
+                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, trnslen).toString().replace("\r", ""));
                 qtr += trnslen; // 次のNULLまでスキップ
 
                 // 拡張属性取得
@@ -610,11 +608,11 @@ class PdicInfo {
                     if ((eatr & (0x10 | 0x40)) == 0) { // バイナリOFF＆圧縮OFFの場合
                         if ((eatr & 0x0F) == 0x01) { // 用例
                             int len = getLengthToNextZero(buff, qtr);
-                            res.mSample = decodetoCharBuffer(mMainCharset, buff, qtr, len).toString().replace("\r", "");
+                            res.setSample(decodetoCharBuffer(mainCharset, buff, qtr, len).toString().replace("\r", ""));
                             qtr += len; // 次のNULLまでスキップ
                         } else if ((eatr & 0x0F) == 0x02) { // 発音
                             int len = getLengthToNextZero(buff, qtr);
-                            res.mPhone = decodetoCharBuffer(mPhoneCharset, buff, qtr, len).toString();
+                            res.setPhone(decodetoCharBuffer(phoneCharset, buff, qtr, len).toString());
                             qtr += len; // 次のNULLまでスキップ
                         }
                     } else {
@@ -624,9 +622,9 @@ class PdicInfo {
                 }
             } else {
                 // 残り全部が訳文
-                res.mTrans = decodetoCharBuffer(mMainCharset, buff, qtr, mNextPtr - qtr).toString().replace("\r", "");
+                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, mNextPtr - qtr).toString().replace("\r", ""));
             }
-            return res;
+            return res.build();
         }
 
         // 次の項目が検索語に前方一致するかチェックする

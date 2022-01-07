@@ -69,9 +69,9 @@ public class PdicDictionary {
             if ((header.version & 0xFF00) < 0x0500 || header.os != 0x20) {
                 throw new RuntimeException("Unsupported dictionary version");
             }
-            dicInfo = new PdicInfo(file, header.header_size + header.extheader,
-                    header.block_size * header.index_block, header.nindex2, header.index_blkbit,
-                    header.block_size);
+            dicInfo = new PdicInfo(file, header.headerSize + header.extheader,
+                    header.blockSize * header.indexBlock, header.nindex2, header.indexBlkbit,
+                    header.blockSize);
             if (!dicInfo.readIndexBlock(cacheFile)) {
                 throw new RuntimeException("Failed to load dictionary index");
             }

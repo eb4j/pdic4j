@@ -35,9 +35,9 @@ final class PdicHeader {
     public short version;      //   辞書のバージョン
     // public short lword;        //   見出語の最大長
     // public short ljapa;        //   訳語の最大長
-    public short block_size;      //  (256 ) １ブロックのバイト数 固定
-    public short index_block;     //   インデックスブロック数
-    public short header_size;     //   ヘッダーのバイト数
+    public short blockSize;      //  (256 ) １ブロックのバイト数 固定
+    public short indexBlock;     //   インデックスブロック数
+    public short headerSize;     //   ヘッダーのバイト数
     // public short index_size;  //  ( ) インデックスのバイト数 未使用
 
     // public short nindex;       //  ( ) インデックスの要素の数 未使用
@@ -49,7 +49,7 @@ final class PdicHeader {
 
     public byte attrlen;       //   単語属性の長さ
     public byte os;          // OS
-    public boolean index_blkbit;   // false:16bit, true:32bit
+    public boolean indexBlkbit;   // false:16bit, true:32bit
     public int extheader;      //   拡張ヘッダーサイズ
     public int nindex2;       //   インデックス要素の数
     // public int nblock2;       //   使用データブロック数
@@ -85,9 +85,9 @@ final class PdicHeader {
             headerBlock.getShort();  // lword
             headerBlock.getShort();  // ljapa
 
-            block_size = headerBlock.getShort();
-            index_block = headerBlock.getShort();
-            header_size = headerBlock.getShort();
+            blockSize = headerBlock.getShort();
+            indexBlock = headerBlock.getShort();
+            headerSize = headerBlock.getShort();
             headerBlock.getShort();  // index_size
             headerBlock.getShort();  // empty_block
             headerBlock.getShort();  // nindex
@@ -109,7 +109,7 @@ final class PdicHeader {
             headerBlock.getShort();
             headerBlock.getShort();
 
-            index_blkbit = (headerBlock.get() != 0);
+            indexBlkbit = (headerBlock.get() != 0);
             headerBlock.get(); // dummy0
             extheader = headerBlock.getInt();
             headerBlock.getInt();  //empty_block2
