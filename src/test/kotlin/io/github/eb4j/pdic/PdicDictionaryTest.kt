@@ -63,8 +63,11 @@ class PdicDictionaryTest {
 
     @Test
     fun getEntriesWithoutCache() {
-        PdicDictionary.loadDictionary(file, null)
-            .getEntries("japanese").forEach {
+        val pdicDictionary = PdicDictionary.loadDictionary(file, null)
+        assertEquals(10, pdicDictionary.maxSearchCount)
+        pdicDictionary.setMaxSearchCount(20)
+        assertEquals(20, pdicDictionary.maxSearchCount)
+        pdicDictionary.getEntries("japanese").forEach {
                 assertAll(
                     Executable { assertEquals("こんにちは", it.trans) },
                     Executable { assertEquals("japanese", it.index) },
