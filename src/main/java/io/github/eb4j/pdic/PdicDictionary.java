@@ -50,6 +50,7 @@ public class PdicDictionary {
      * Look up word from index.
      * @param word keyword to search.
      * @return list of result as PdicElement.
+     * @throws IOException when error occurred.
      */
     public List<PdicElement> getEntries(@NotNull final String word) throws IOException {
         if (dicInfo.searchWord(word)) {
@@ -62,6 +63,7 @@ public class PdicDictionary {
      * Look up word from index by prefix search.
      * @param word keyword to search.
      * @return list of result as PdicElement.
+     * @throws IOException when error occurred.
      */
     public List<PdicElement> getEntriesPredictive(@NotNull final String word) throws IOException {
         if (dicInfo.searchPrefix(word)) {
