@@ -88,7 +88,8 @@ public class PdicDictionary {
      * @return PdicDicitonary object.
      * @throws IOException when file read and parse failed.
      */
-    public static PdicDictionary loadDictionary(@NotNull final File file, @Nullable final File cacheFile) throws IOException {
+    public static PdicDictionary loadDictionary(@NotNull final File file, @Nullable final File cacheFile)
+            throws IOException {
         DictionaryData dicInfo;
         if (!file.isFile()) {
             throw new IOException("Target file is not a file.");
