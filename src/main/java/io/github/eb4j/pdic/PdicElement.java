@@ -30,7 +30,8 @@ public final class PdicElement {
     private final String sample;
     private final String phone;
 
-    private PdicElement(final byte attr, String index, String disp, String trans, String sample, String phone) {
+    private PdicElement(final byte attr, final String index, final String disp, final String trans, final String sample,
+                        final String phone) {
         this.attr = attr;
         this.index = index;
         this.disp = disp;
@@ -71,27 +72,27 @@ public final class PdicElement {
         private String sample = null;
         private String phone = null;
 
-        public void setAttr(byte attr) {
+        public void setAttr(final byte attr) {
             this.attr = attr;
         }
 
-        public void setIndex(String index) {
+        public void setIndex(final String index) {
             this.index = index;
         }
 
-        public void setDisp(String disp) {
+        public void setDisp(final String disp) {
             this.disp = disp;
         }
 
-        public void setTrans(String trans) {
+        public void setTrans(final String trans) {
             this.trans = trans;
         }
 
-        public void setSample(String sample) {
+        public void setSample(final String sample) {
             this.sample = sample;
         }
 
-        public void setPhone(String phone) {
+        public void setPhone(final String phone) {
             this.phone = phone;
         }
 
