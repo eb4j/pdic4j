@@ -1,15 +1,29 @@
 # PDIC/Unicode specification
 
 A specification here is published by PDIC author in MS word format(doc).
+There are several formats of specification document.
 
-## Restructured text version
+- Original file: MS word 97-2003 format.
+- ISO/JIS standard OpenDocument format.
+- ReStructured text format
+- HTML format
 
-Markdown version of the specification is converted from original format
-using following tools.
+## ReStructured text format
 
-- doc to odf: libreoffice 7.0
-- odf to restructured text: pandoc
-- hankaku kana to zenkaku: nkf
+ReStructured text version of the specification is converted from original using following tools.
+
+- Legacy MS word file to ISO standard OpenDocument format(.odt): LibreOffice 7.0
+- OpenDocument to ReStructured text: pandoc
+- Legacy Hankaku kana to Zenkaku: nkf
+
+There is no change in content, but some mathematical equations are also converted
+into math extension of ReST.
+
+If there is any bug that make contents break, please tell in issue tracking system.
+
+## HTML format
+
+HTML version of the document is generated from ReStructured text format by using Sphinx.
 
 ## Copyright and license of the specification
 
