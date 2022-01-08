@@ -20,6 +20,7 @@ package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -113,7 +114,7 @@ class PdicInfo {
      *
      * @return true when successfully read block, otherwise false.
      */
-    public boolean readIndexBlock(final File indexcache) throws IOException {
+    public boolean readIndexBlock(@Nullable final File indexcache) throws IOException {
         bodyPtr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
         if (indexcache != null) {
             try (FileInputStream fis = new FileInputStream(indexcache)) {

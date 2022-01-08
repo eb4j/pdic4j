@@ -18,6 +18,9 @@
 
 package io.github.eb4j.pdic;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,7 +46,7 @@ public class PdicDictionary {
      * @param word keyword to search.
      * @return list of result as PdicElement.
      */
-    public List<PdicElement> getEntries(final String word) throws IOException {
+    public List<PdicElement> getEntries(@NotNull final String word) throws IOException {
         if (dicInfo.searchWord(word)) {
             return dicInfo.getResult();
         }
@@ -55,7 +58,7 @@ public class PdicDictionary {
      * @param word keyword to search.
      * @return list of result as PdicElement.
      */
-    public List<PdicElement> getEntriesPredictive(final String word) throws IOException {
+    public List<PdicElement> getEntriesPredictive(@NotNull final String word) throws IOException {
         if (dicInfo.searchPrefix(word)) {
             return dicInfo.getResult();
         }
@@ -85,7 +88,7 @@ public class PdicDictionary {
      * @return PdicDicitonary object.
      * @throws IOException when file read and parse failed.
      */
-    public static PdicDictionary loadDictionary(final File file, final File cacheFile) throws IOException {
+    public static PdicDictionary loadDictionary(@NotNull final File file, @Nullable final File cacheFile) throws IOException {
         PdicInfo dicInfo;
         if (!file.isFile()) {
             throw new IOException("Target file is not a file.");
