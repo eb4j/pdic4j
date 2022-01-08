@@ -195,6 +195,7 @@ final class AnalyzeBlock {
 
         // 見出し語属性 skip
         attr = buff[qtr++];
+        elementBuilder.setAttr(attr);
 
         // 見出し語 skip
         qtr += Utils.getLengthToNextZero(buff, qtr) + 1;
