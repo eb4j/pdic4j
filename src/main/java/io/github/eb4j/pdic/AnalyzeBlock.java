@@ -59,10 +59,7 @@ final class AnalyzeBlock {
      * ブロックデータの中から指定語を探す.
      */
     public boolean searchWord() {
-        final byte[] bytes = searchWord;
-        final boolean longfield = longField;
         final byte[] compbuff = compBuff;
-        final int wordlen = bytes.length;
 
         foundPtr = -1;
 
@@ -81,7 +78,7 @@ final class AnalyzeBlock {
             b <<= 8;
             flen |= (b & 0xFF00);
 
-            if (longfield) {
+            if (longField) {
                 b = buff[ptr++];
                 b <<= 16;
                 flen |= (b & 0xFF0000);
@@ -114,20 +111,20 @@ final class AnalyzeBlock {
             complen += indexStringLen;
 
             // 見出し語の方が短ければ不一致
-            if (complen < wordlen) {
+            if (complen < searchWord.length) {
                 continue;
             }
 
 
             // 前方一致で比較
             boolean equal = true;
-            for (int i = 0; i < wordlen; i++) {
+            for (int i = 0; i < searchWord.length; i++) {
 
-                if (compbuff[i] != bytes[i]) {
+                if (compbuff[i] != searchWord[i]) {
                     equal = false;
                     int cc = compbuff[i];
                     cc &= 0xFF;
-                    int cw = bytes[i];
+                    int cw = searchWord[i];
                     cw &= 0xFF;
                     // 超えてたら打ち切る
                     if (cc > cw) {
@@ -246,8 +243,6 @@ final class AnalyzeBlock {
         if (foundPtr == -1) {
             return false;
         }
-        word = searchWord;
-        int wordlen = word.length;
 
         // 訳語データ読込
         int ptr = nextPtr;
@@ -291,18 +286,18 @@ final class AnalyzeBlock {
         complen += indexStringLen;
 
         // 見出し語の方が短ければ不一致
-        if (complen < wordlen) {
+        if (complen < searchWord.length) {
             return false;
         }
 
         // 前方一致で比較
         boolean equal = true;
-        for (int i = 0; i < wordlen; i++) {
-            if (compbuff[i] != word[i]) {
+        for (int i = 0; i < searchWord.length; i++) {
+            if (compbuff[i] != searchWord[i]) {
                 equal = false;
                 int cc = compbuff[i];
                 cc &= 0xFF;
-                int cw = word[i];
+                int cw = searchWord[i];
                 cw &= 0xFF;
                 // 超えてたら打ち切る
                 if (cc > cw) {

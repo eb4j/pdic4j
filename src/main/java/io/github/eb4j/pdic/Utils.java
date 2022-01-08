@@ -29,7 +29,7 @@ final class Utils {
     /**
      * Hide utility class constructor.
      */
-    private Utils () { }
+    private Utils() { }
 
     /**
      * byte配列の本文文字列をCharBufferに変換する.
