@@ -6,7 +6,7 @@ pdic4j
    :caption: Contents:
 
    about
-   javadoc
+   development
    spec/pdicu-dic
 
 Indices and tables

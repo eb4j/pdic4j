@@ -13,4 +13,4 @@ License
 -------
 
 PDIC4J is distributed under GNU General Public License version 3 or (at your option) any later version.
-s
+Please see LICENSE file in project root.
