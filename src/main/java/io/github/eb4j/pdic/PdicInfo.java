@@ -19,6 +19,7 @@
 package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,32 +38,29 @@ import java.util.List;
  */
 @SuppressWarnings("membername")
 class PdicInfo {
-    protected File file;
-    protected int bodyPtr;
-    protected List<PdicElement> searchResults = new ArrayList<>();
+    private final RandomAccessFile sourceStream;
+    private final File file;
+    private final List<PdicElement> searchResults = new ArrayList<>();
+    private final int start;
+    private final int size;
+    private final int blockBits;
+    private final int nIndex;
+    private final int blocksize;
+    private final Charset mainCharset = CharsetICU.forNameICU("BOCU-1");
+    private final AnalyzeBlock analyze;
+    private final PdicInfoCache pdicInfoCache;
 
-    protected int start;
-    protected int size;
-    protected int blockBits;
-    protected int nIndex;
-    protected int blocksize;
-    protected boolean match;
-    protected int searchmax; // 最大検索件数
-    protected String dictName; // 辞書名
+    private boolean match;
+    private int searchmax; // 最大検索件数
 
-    protected int[] indexPtr;
+    private int bodyPtr;
+    private int[] indexPtr;
+    private int lastIndex = 0;
 
-    protected Charset mainCharset = CharsetICU.forNameICU("BOCU-1");
-
-    protected AnalyzeBlock analyze;
-    protected int lastIndex = 0;
-    protected PdicInfoCache pdicInfoCache;
-
-    private RandomAccessFile sourceStream = null;
 
     @SuppressWarnings("avoidinlineconditionals")
-    PdicInfo(final File file, final int start, final int size, final int nindex, final boolean blockbits,
-             final int blocksize) {
+    PdicInfo(@NotNull final File file, final int start, final int size, final int nindex, final boolean blockbits,
+             final int blocksize) throws FileNotFoundException {
         this.file = file;
         this.start = start;
         this.size = size;
@@ -70,13 +68,9 @@ class PdicInfo {
         blockBits = (blockbits) ? 4 : 2;
         this.blocksize = blocksize;
         searchmax = 10;
-
-        try {
-            sourceStream = new RandomAccessFile(file, "r");
-            analyze = new AnalyzeBlock();
-            pdicInfoCache = new PdicInfoCache(sourceStream, this.start, this.size);
-        } catch (FileNotFoundException ignored) {
-        }
+        sourceStream = new RandomAccessFile(file, "r");
+        pdicInfoCache = new PdicInfoCache(sourceStream, this.start, this.size);
+        analyze = new AnalyzeBlock();
     }
 
     /**
@@ -123,10 +117,9 @@ class PdicInfo {
                     byte[] buff = new byte[(nIndex + 1) * 4];
                     int readlen = fis.read(buff);
                     if (readlen == buff.length) {
-                        final int indexlen = nIndex;
                         indexPtr = new int[nIndex + 1];
                         int ptr = 0;
-                        for (int i = 0; i <= indexlen; i++) {
+                        for (int i = 0; i <= nIndex; i++) {
                             int b;
                             int dat;
                             b = buff[ptr++];
@@ -205,14 +198,6 @@ class PdicInfo {
 
     public void setSearchMax(final int m) {
         searchmax = m;
-    }
-
-    public void setDicName(final String b) {
-        dictName = b;
-    }
-
-    public String getDicName() {
-        return dictName;
     }
 
     // 単語を検索する

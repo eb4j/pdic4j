@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,40 +32,71 @@ import java.util.List;
  */
 public class PdicDictionary {
     private final PdicInfo dicInfo;
+    private static final int HEADER_SIZE = 256;
 
     public PdicDictionary(final PdicInfo dicInfo) {
         this.dicInfo = dicInfo;
     }
 
+    /**
+     * Look up word from index.
+     * @param word keyword to search.
+     * @return list of result as PdicElement.
+     */
     public List<PdicElement> getEntries(final String word) {
-        List<PdicElement> result = null;
         if (dicInfo.searchWord(word)) {
-            result = dicInfo.getResult();
+            return dicInfo.getResult();
         }
-        return result;
+        return Collections.emptyList();
     }
 
+    /**
+     * Look up word from index by prefix search.
+     * @param word keyword to search.
+     * @return list of result as PdicElement.
+     */
     public List<PdicElement> getEntriesPredictive(final String word) {
-        List<PdicElement> result = null;
         if (dicInfo.searchPrefix(word)) {
-            result = dicInfo.getResult();
+            return dicInfo.getResult();
         }
-        return result;
+        return Collections.emptyList();
     }
 
+    /**
+     * Set maximum counts of resulted entries.
+     * @param count max count.
+     */
+    public void setMaxSearchCount(final int count) {
+        dicInfo.setSearchMax(count);
+    }
+
+    /**
+     * Get maximum counts of resulted entries.
+     * @return max search count.
+     */
+    public int getMaxSearchCount() {
+        return dicInfo.getSearchMax();
+    }
+
+    /**
+     * PDIC/Unicode Dictionary loader.
+     * @param file .dic file object.
+     * @param cacheFile index cache file object, or null when don't cache.
+     * @return PdicDicitonary object.
+     * @throws IOException when file read and parse failed.
+     */
     public static PdicDictionary loadDictionary(final File file, final File cacheFile) throws IOException {
         PdicInfo dicInfo;
         if (!file.isFile()) {
             throw new IOException("Target file is not a file.");
         }
-        final int headerSize = 256;
-        PdicHeader header; // ヘッダー
-        ByteBuffer headerbuff = ByteBuffer.allocate(headerSize);
+        PdicHeader header;
+        ByteBuffer headerbuff = ByteBuffer.allocate(HEADER_SIZE);
         try (FileInputStream srcStream = new FileInputStream(file);
              FileChannel srcChannel = srcStream.getChannel()) {
             int len = srcChannel.read(headerbuff);
             srcChannel.close();
-            if (len != headerSize) {
+            if (len != HEADER_SIZE) {
                 throw new RuntimeException("Failed to read dictionary.");
             }
             header = new PdicHeader();
@@ -82,7 +114,6 @@ public class PdicDictionary {
                 throw new RuntimeException("Failed to load dictionary index");
             }
         }
-        dicInfo.setDicName(file.getName());
         return new PdicDictionary(dicInfo);
     }
 }
