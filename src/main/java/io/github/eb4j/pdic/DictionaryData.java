@@ -61,7 +61,7 @@ class DictionaryData {
     private int lastIndex = 0;
 
     DictionaryData(@NotNull final File file, final int start, final int size, final int nindex, final boolean blockbits,
-                   final int blocksize) throws FileNotFoundException {
+                   final int blocksize, final int searchMax) throws FileNotFoundException {
         this.file = file;
         this.start = start;
         this.size = size;
@@ -72,7 +72,7 @@ class DictionaryData {
             blockBits = 2;
         }
         this.blocksize = blocksize;
-        searchmax = 10;
+        this.searchmax = searchMax;
         sourceStream = new RandomAccessFile(file, "r");
         indexCache = new IndexCache(sourceStream, this.start, this.size);
         analyze = new AnalyzeBlock();

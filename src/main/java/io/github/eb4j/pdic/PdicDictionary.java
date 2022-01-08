@@ -37,6 +37,11 @@ public class PdicDictionary {
     private final DictionaryData dicInfo;
     private static final int HEADER_SIZE = 256;
 
+    /**
+     * Default maximum count of returned entry of search results.
+     */
+    public static final int DEFAULT_MAX_RESULTS = 10;
+
     public PdicDictionary(final DictionaryData dicInfo) {
         this.dicInfo = dicInfo;
     }
@@ -113,7 +118,7 @@ public class PdicDictionary {
             }
             dicInfo = new DictionaryData(file, header.headerSize + header.extheader,
                     header.blockSize * header.indexBlock, header.nindex2, header.indexBlkbit,
-                    header.blockSize);
+                    header.blockSize, DEFAULT_MAX_RESULTS);
             if (!dicInfo.readIndexBlock(cacheFile)) {
                 throw new RuntimeException("Failed to load dictionary index");
             }
