@@ -1,7 +1,3 @@
-import java.io.File
-import java.io.FileInputStream
-import java.util.Properties
-
 plugins {
     checkstyle
     jacoco
@@ -26,9 +22,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains:annotations:23.0.0")
-    implementation("com.github.takawitter:trie4j:0.9.8")
     implementation("org.apache.commons:commons-lang3:3.12.0")
-    implementation("commons-io:commons-io:2.11.0")
     implementation("com.ibm.icu:icu4j-charset:70.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
