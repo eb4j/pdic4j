@@ -27,9 +27,42 @@ class PdicDictionaryTest {
 
     @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     val file: File by lazy { File(this.javaClass.getResource("/Sample.dic").toURI().path) }
+    val cache: File by lazy { File(file.absolutePath + ".idx") }
 
     @Test
-    fun getEntries() {
+    fun getEntriesPredictive() {
+        PdicDictionary.loadDictionary(file, cache)
+            .getEntriesPredictive("japan").forEach {
+                assertAll(
+                    Executable { assertEquals("こんにちは", it.trans) },
+                    Executable { assertEquals("japanese", it.index) },
+                    Executable { assertEquals("Japanese", it.disp) },
+                    Executable { assertEquals(0, it.attr) },
+                    Executable { assertNull(it.phone) },
+                    Executable { assertNull(it.sample) }
+                )
+                return
+            }
+    }
+
+    @Test
+    fun getEntriesWithCache() {
+        PdicDictionary.loadDictionary(file, cache)
+            .getEntries("japanese").forEach {
+                assertAll(
+                    Executable { assertEquals("こんにちは", it.trans) },
+                    Executable { assertEquals("japanese", it.index) },
+                    Executable { assertEquals("Japanese", it.disp) },
+                    Executable { assertEquals(0, it.attr) },
+                    Executable { assertNull(it.phone) },
+                    Executable { assertNull(it.sample) }
+                )
+                return
+            }
+    }
+
+    @Test
+    fun getEntriesWithoutCache() {
         PdicDictionary.loadDictionary(file, null)
             .getEntries("japanese").forEach {
                 assertAll(
