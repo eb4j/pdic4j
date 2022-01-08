@@ -1,3 +1,21 @@
+/*
+ * PDIC4j, a PDIC dictionary access library.
+ * Copyright (C) 2022 Hiroshi Miura.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
@@ -13,7 +31,7 @@ import java.util.WeakHashMap;
  */
 class IndexCache {
     private final boolean fix;
-    private final int blockSize;
+    private final int segmentBlockSize;
     private final RandomAccessFile randomAccessFile;
     private final int start;
     private final int size;
@@ -26,10 +44,10 @@ class IndexCache {
         this.size = size;
         if (this.size < 1024 * 512) {
             fix = true;
-            blockSize = this.size;
+            segmentBlockSize = this.size;
         } else {
             fix = false;
-            blockSize = 1024;
+            segmentBlockSize = 1024;
         }
     }
 
@@ -54,11 +72,11 @@ class IndexCache {
             segmentData = ref.get();
         }
         if (segmentData == null) {
-            segmentData = new byte[blockSize];
+            segmentData = new byte[segmentBlockSize];
             try {
-                randomAccessFile.seek(start + (long) segment * blockSize);
-                int len = randomAccessFile.read(segmentData, 0, blockSize);
-                if (len == blockSize || len == size % blockSize) {
+                randomAccessFile.seek(start + (long) segment * segmentBlockSize);
+                int len = randomAccessFile.read(segmentData, 0, segmentBlockSize);
+                if (len == segmentBlockSize || len == size % segmentBlockSize) {
                     mMap.put(segment, new WeakReference<>(segmentData));
                 } else {
                     return null;
@@ -72,8 +90,8 @@ class IndexCache {
 
 
     public int getShort(final int ptr) {
-        int segment = ptr / blockSize;
-        int address = ptr % blockSize;
+        int segment = ptr / segmentBlockSize;
+        int address = ptr % segmentBlockSize;
         byte[] segmentdata = getSegment(segment++);
 
         int dat = 0;
@@ -83,8 +101,8 @@ class IndexCache {
             b &= 0xFF;
             dat |= b;
 
-            if (address >= blockSize) {
-                address %= blockSize;
+            if (address >= segmentBlockSize) {
+                address %= segmentBlockSize;
                 segmentdata = getSegment(segment);
             }
             b = segmentdata[address];
@@ -95,8 +113,8 @@ class IndexCache {
     }
 
     public int getInt(final int ptr) {
-        int segment = ptr / blockSize;
-        int address = ptr % blockSize;
+        int segment = ptr / segmentBlockSize;
+        int address = ptr % segmentBlockSize;
         byte[] segmentdata = getSegment(segment++);
 
         int dat = 0;
@@ -105,22 +123,22 @@ class IndexCache {
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= b;
-            if (address >= blockSize) {
-                address %= blockSize;
+            if (address >= segmentBlockSize) {
+                address %= segmentBlockSize;
                 segmentdata = getSegment(segment++);
             }
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= (b << 8);
-            if (address >= blockSize) {
-                address %= blockSize;
+            if (address >= segmentBlockSize) {
+                address %= segmentBlockSize;
                 segmentdata = getSegment(segment++);
             }
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= (b << 16);
-            if (address >= blockSize) {
-                address %= blockSize;
+            if (address >= segmentBlockSize) {
+                address %= segmentBlockSize;
                 segmentdata = getSegment(segment);
             }
             b = segmentdata[address];
@@ -166,8 +184,8 @@ class IndexCache {
      */
     @SuppressWarnings("finalparameters")
     public int compare(final byte[] aa, final int pa, final int la, final int ptr, final int len) {
-        int segment = ptr / blockSize;
-        int address = ptr % blockSize;
+        int segment = ptr / segmentBlockSize;
+        int address = ptr % segmentBlockSize;
         byte[] segmentdata = getSegment(segment++);
 
         if (segmentdata == null) {
@@ -178,11 +196,11 @@ class IndexCache {
             return 1;
         }
 
-        if (address + len < blockSize) {
+        if (address + len < segmentBlockSize) {
             Utils.decodetoCharBuffer(CharsetICU.forNameICU("BOCU-1"), segmentdata, address, len);
             return compareArrayAsUnsigned(aa, pa, la, segmentdata, address, len);
         } else {
-            int lena = blockSize - address;
+            int lena = segmentBlockSize - address;
             int leno = Math.min(la, lena);
             int ret = compareArrayAsUnsigned(aa, pa, leno, segmentdata, address, lena);
             Utils.decodetoCharBuffer(CharsetICU.forNameICU("BOCU-1"), segmentdata, address, lena);
@@ -208,7 +226,7 @@ class IndexCache {
      */
     public boolean createIndex(final int blockBits, final int nIndex, final int[] indexPtr) {
         // インデックスの先頭から見出し語のポインタを拾っていく
-        int blockSize = 64 * 1024;
+        final int blockSize = 64 * 1024;
         int[] params = new int[]{0, 0, nIndex, blockSize, blockBits, 1, 0};
 
         boolean hasNext = true;
@@ -224,7 +242,7 @@ class IndexCache {
         int curptr = params[1];
         int max = params[2];
         int buffmax = params[3];
-        int blockbits = params[4];
+        int blockBits = params[4];
         int found = params[5];
         int ignore = params[6];
 
@@ -234,9 +252,9 @@ class IndexCache {
             if (ignore > 0) {
                 ignore--;
             } else if (found != 0) {
-                int ptr = curptr + i + blockbits;  // ブロック番号サイズポインタを進める
+                int ptr = curptr + i + blockBits;  // ブロック番号サイズポインタを進める
                 indexPtr[curidx++] = ptr;          // 見出し語部分のポインタを保存
-                ignore = blockbits - 1;
+                ignore = blockBits - 1;
                 found = 0;
             } else if (buff[i] == 0) {
                 found = 1;
