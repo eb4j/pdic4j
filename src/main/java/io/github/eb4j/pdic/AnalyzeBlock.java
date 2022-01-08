@@ -59,20 +59,33 @@ final class AnalyzeBlock {
      * ブロックデータの中から指定語を探す.
      */
     public boolean searchWord() {
-        final byte[] compbuff = compBuff;
-
-        foundPtr = -1;
-
-        // 訳語データ読込
         int ptr = nextPtr;
+        foundPtr = -1;
         nextPtr = -1;
-        while (true) {
-            int flen = 0;
-            int retptr = ptr;
-            int b;
+        return lookUpNext(ptr, false, true);
+    }
 
+    /**
+     * Check next entry match to searchWord.
+     * @param incrementptr true when increment pointer, otherwise just peek.
+     * @return true if nect entry is matched, otherwise false.
+     */
+    public boolean hasMoreResult(final boolean incrementptr) {
+        if (foundPtr == -1) {  // when previous attempt failed.
+            return false;
+        }
+        return lookUpNext(nextPtr, true, incrementptr);
+    }
+
+    private boolean lookUpNext(final int lookPtr, final boolean once, final boolean incrementptr) {
+        int ptr = lookPtr;
+        int retptr = ptr;
+        int flen;
+        int b;
+
+        while (true) {
             b = buff[ptr++];
-            flen |= (b & 0xFF);
+            flen = (b & 0xFF);
 
             b = buff[ptr++];
             b <<= 8;
@@ -89,40 +102,36 @@ final class AnalyzeBlock {
             }
             if (flen == 0) {
                 eob = true;
-                break;
+                return false;
             }
             int qtr = ptr;
-            ptr += flen + 1;
-            ptr++;
-
 
             // 圧縮長
-            int complen = buff[qtr++];
-            complen &= 0xFF;
+            int complen = buff[qtr++] & 0xFF;
 
             // 見出し語属性 skip
             qtr++;
 
             // 見出し語圧縮位置保存
-            // while ((compbuff[complen++] = buff[qtr++]) != 0) ;
             int indexStringLen = Utils.getLengthToNextZero(buff, qtr) + 1;
-            System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
-            qtr += indexStringLen;
+            System.arraycopy(buff, qtr, compBuff, complen, indexStringLen);
             complen += indexStringLen;
 
             // 見出し語の方が短ければ不一致
             if (complen < searchWord.length) {
-                continue;
+                if (once) {
+                    return false;
+                } else {
+                    continue;
+                }
             }
-
 
             // 前方一致で比較
             boolean equal = true;
             for (int i = 0; i < searchWord.length; i++) {
-
-                if (compbuff[i] != searchWord[i]) {
+                if (compBuff[i] != searchWord[i]) {
                     equal = false;
-                    int cc = compbuff[i];
+                    int cc = compBuff[i];
                     cc &= 0xFF;
                     int cw = searchWord[i];
                     cw &= 0xFF;
@@ -134,13 +143,14 @@ final class AnalyzeBlock {
                 }
             }
             if (equal) {
-                foundPtr = retptr;
-                nextPtr = ptr;
-                compLen = complen - 1;
+                if (incrementptr) {
+                    foundPtr = retptr;
+                    nextPtr = ptr + flen + 2;
+                    compLen = complen - 1;
+                }
                 return true;
             }
         }
-        return false;
     }
 
     /**
@@ -166,13 +176,12 @@ final class AnalyzeBlock {
             elementBuilder.setDisp(indexstr.substring(tab + 1));
         }
 
-        final boolean longfield = longField;
         byte attr;
 
         // 訳語データ読込
         int ptr = foundPtr;
 
-        if (longfield) {
+        if (longField) {
             ptr += 4;
         } else {
             ptr += 2;
@@ -232,85 +241,5 @@ final class AnalyzeBlock {
             );
         }
         return elementBuilder.build();
-    }
-
-    // 次の項目が検索語に前方一致するかチェックする
-    public boolean hasMoreResult(final boolean incrementptr) {
-        byte[] word;
-        final byte[] compbuff = compBuff;
-
-        // next search
-        if (foundPtr == -1) {
-            return false;
-        }
-
-        // 訳語データ読込
-        int ptr = nextPtr;
-
-        int retptr = ptr;
-        int flen;
-        int b;
-
-        b = buff[ptr++];
-        flen = (b & 0xFF);
-
-        b = buff[ptr++];
-        b <<= 8;
-        flen |= (b & 0xFF00);
-
-        if (longField) {
-            b = buff[ptr++];
-            b <<= 16;
-            flen |= (b & 0xFF0000);
-
-            b = buff[ptr++];
-            b <<= 24;
-            flen |= (b & 0x7F000000);
-        }
-        if (flen == 0) {
-            eob = true;
-            return false;
-        }
-        int qtr = ptr;
-
-        // 圧縮長
-        int complen = buff[qtr++];
-        complen &= 0xFF;
-
-        // 見出し語属性 skip
-        qtr++;
-
-        // 見出し語圧縮位置保存
-        int indexStringLen = Utils.getLengthToNextZero(buff, qtr) + 1;
-        System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
-        complen += indexStringLen;
-
-        // 見出し語の方が短ければ不一致
-        if (complen < searchWord.length) {
-            return false;
-        }
-
-        // 前方一致で比較
-        boolean equal = true;
-        for (int i = 0; i < searchWord.length; i++) {
-            if (compbuff[i] != searchWord[i]) {
-                equal = false;
-                int cc = compbuff[i];
-                cc &= 0xFF;
-                int cw = searchWord[i];
-                cw &= 0xFF;
-                // 超えてたら打ち切る
-                if (cc > cw) {
-                    return false;
-                }
-                break;
-            }
-        }
-        if (equal && incrementptr) {
-            foundPtr = retptr;
-            nextPtr = ptr + flen + 2;
-            compLen = complen - 1;
-        }
-        return equal;
     }
 }
