@@ -225,10 +225,6 @@ class PdicInfo {
      */
     static int getLengthToNextZero(final byte[] array, final int pos) {
         return ArrayUtils.indexOf(array, (byte) 0, pos) - pos;
-        // int len = 0;
-        // while (array[pos + len] != 0)
-        //     len++;
-        // return len;
     }
 
     boolean isMatch() {
