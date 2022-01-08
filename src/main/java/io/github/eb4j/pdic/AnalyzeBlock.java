@@ -46,7 +46,7 @@ final class AnalyzeBlock {
     }
 
     public void setSearch(final String word) {
-        ByteBuffer buffer = PdicInfo.encodetoByteBuffer(mainCharset, word);
+        ByteBuffer buffer = Utils.encodetoByteBuffer(mainCharset, word);
         searchWord = new byte[buffer.limit()];
         System.arraycopy(buffer.array(), 0, searchWord, 0, buffer.limit());
     }
@@ -108,7 +108,7 @@ final class AnalyzeBlock {
 
             // 見出し語圧縮位置保存
             // while ((compbuff[complen++] = buff[qtr++]) != 0) ;
-            int indexStringLen = PdicInfo.getLengthToNextZero(buff, qtr) + 1;
+            int indexStringLen = Utils.getLengthToNextZero(buff, qtr) + 1;
             System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
             qtr += indexStringLen;
             complen += indexStringLen;
@@ -156,7 +156,7 @@ final class AnalyzeBlock {
             return null;
         }
         final PdicElement.PdicElementBuilder elementBuilder = new PdicElement.PdicElementBuilder();
-        String indexstr = PdicInfo.decodetoCharBuffer(mainCharset, compBuff, 0, compLen).toString();
+        String indexstr = Utils.decodetoCharBuffer(mainCharset, compBuff, 0, compLen).toString();
         elementBuilder.setIndex(indexstr);
         // ver6対応 見出し語が、<検索インデックス><TAB><表示用文字列>の順に
         // 設定されていてるので、分割する。
@@ -191,12 +191,12 @@ final class AnalyzeBlock {
         attr = buff[qtr++];
 
         // 見出し語 skip
-        qtr += PdicInfo.getLengthToNextZero(buff, qtr) + 1;
+        qtr += Utils.getLengthToNextZero(buff, qtr) + 1;
 
         // 訳語
         if ((attr & 0x10) != 0) { // 拡張属性ありの時
-            int trnslen = PdicInfo.getLengthToNextZero(buff, qtr);
-            elementBuilder.setTrans(PdicInfo.decodetoCharBuffer(mainCharset, buff, qtr, trnslen)
+            int trnslen = Utils.getLengthToNextZero(buff, qtr);
+            elementBuilder.setTrans(Utils.decodetoCharBuffer(mainCharset, buff, qtr, trnslen)
                     .toString()
                     .replace("\r", "")
             );
@@ -211,15 +211,15 @@ final class AnalyzeBlock {
                 }
                 if ((eatr & (0x10 | 0x40)) == 0) { // バイナリOFF＆圧縮OFFの場合
                     if ((eatr & 0x0F) == 0x01) { // 用例
-                        int len = PdicInfo.getLengthToNextZero(buff, qtr);
-                        elementBuilder.setSample(PdicInfo.decodetoCharBuffer(mainCharset, buff, qtr, len)
+                        int len = Utils.getLengthToNextZero(buff, qtr);
+                        elementBuilder.setSample(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len)
                                 .toString()
                                 .replace("\r", "")
                         );
                         qtr += len; // 次のNULLまでスキップ
                     } else if ((eatr & 0x0F) == 0x02) { // 発音
-                        int len = PdicInfo.getLengthToNextZero(buff, qtr);
-                        elementBuilder.setPhone(PdicInfo.decodetoCharBuffer(mainCharset, buff, qtr, len).toString());
+                        int len = Utils.getLengthToNextZero(buff, qtr);
+                        elementBuilder.setPhone(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len).toString());
                         qtr += len; // 次のNULLまでスキップ
                     }
                 } else {
@@ -229,7 +229,7 @@ final class AnalyzeBlock {
             }
         } else {
             // 残り全部が訳文
-            elementBuilder.setTrans(PdicInfo.decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr)
+            elementBuilder.setTrans(Utils.decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr)
                     .toString()
                     .replace("\r", "")
             );
@@ -286,7 +286,7 @@ final class AnalyzeBlock {
         qtr++;
 
         // 見出し語圧縮位置保存
-        int indexStringLen = PdicInfo.getLengthToNextZero(buff, qtr) + 1;
+        int indexStringLen = Utils.getLengthToNextZero(buff, qtr) + 1;
         System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
         complen += indexStringLen;
 

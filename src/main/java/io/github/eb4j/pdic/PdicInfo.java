@@ -19,7 +19,6 @@
 package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,20 +80,6 @@ class PdicInfo {
     }
 
     /**
-     * byte配列の本文文字列をCharBufferに変換する.
-     */
-    static CharBuffer decodetoCharBuffer(final Charset cs, final byte[] array, final int pos, final int len) {
-        return cs.decode(ByteBuffer.wrap(array, pos, len));
-    }
-
-    /**
-     * 本文の文字列をByteBufferに変換する.
-     */
-    static ByteBuffer encodetoByteBuffer(final Charset cs, final String str) {
-        return cs.encode(str);
-    }
-
-    /**
      * インデックス領域を検索.
      *
      * @return index of block
@@ -104,7 +88,7 @@ class PdicInfo {
         int min = 0;
         int max = nIndex - 1;
 
-        ByteBuffer buffer = encodetoByteBuffer(mainCharset, word);
+        ByteBuffer buffer = Utils.encodetoByteBuffer(mainCharset, word);
         int limit = buffer.limit();
         byte[] bytes = new byte[limit];
         System.arraycopy(buffer.array(), 0, bytes, 0, limit);
@@ -205,17 +189,6 @@ class PdicInfo {
         } else {
             return pdicInfoCache.getShort(blkptr);
         }
-    }
-
-    /**
-     * 次の０までの長さを返す.
-     *
-     * @param array target byte array
-     * @param pos start position
-     * @return length of index.
-     */
-    static int getLengthToNextZero(final byte[] array, final int pos) {
-        return ArrayUtils.indexOf(array, (byte) 0, pos) - pos;
     }
 
     boolean isMatch() {
