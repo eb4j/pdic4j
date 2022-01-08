@@ -1,7 +1,7 @@
-PDIC/Unicode specification
-**************************
+About PDIC specification
+************************
 
-A specification here is published by PDIC author in MS word format(doc).
+A specification here is published by PDIC author in MS word format(doc) in Japanese.
 There are several formats of specification document.
 
 - Original file: MS word 97-2003 format.

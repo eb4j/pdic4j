@@ -7,6 +7,7 @@ pdic4j
 
    about
    development
+   spec/README
    spec/pdicu-dic
 
 Indices and tables
