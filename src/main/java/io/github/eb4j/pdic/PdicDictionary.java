@@ -34,10 +34,10 @@ import java.util.List;
  * @author Hiroshi Miura
  */
 public class PdicDictionary {
-    private final PdicInfo dicInfo;
+    private final DictionaryData dicInfo;
     private static final int HEADER_SIZE = 256;
 
-    public PdicDictionary(final PdicInfo dicInfo) {
+    public PdicDictionary(final DictionaryData dicInfo) {
         this.dicInfo = dicInfo;
     }
 
@@ -89,7 +89,7 @@ public class PdicDictionary {
      * @throws IOException when file read and parse failed.
      */
     public static PdicDictionary loadDictionary(@NotNull final File file, @Nullable final File cacheFile) throws IOException {
-        PdicInfo dicInfo;
+        DictionaryData dicInfo;
         if (!file.isFile()) {
             throw new IOException("Target file is not a file.");
         }
@@ -110,7 +110,7 @@ public class PdicDictionary {
             if ((header.version & 0xFF00) < 0x0500 || header.os != 0x20) {
                 throw new RuntimeException("Unsupported dictionary version");
             }
-            dicInfo = new PdicInfo(file, header.headerSize + header.extheader,
+            dicInfo = new DictionaryData(file, header.headerSize + header.extheader,
                     header.blockSize * header.indexBlock, header.nindex2, header.indexBlkbit,
                     header.blockSize);
             if (!dicInfo.readIndexBlock(cacheFile)) {

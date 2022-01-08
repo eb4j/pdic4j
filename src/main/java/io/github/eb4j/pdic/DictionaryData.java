@@ -37,7 +37,7 @@ import java.util.List;
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
-class PdicInfo {
+class DictionaryData {
 
     private static final int SECTOR_SIZE = 0x200;
 
@@ -51,7 +51,7 @@ class PdicInfo {
     private final int blocksize;
     private final Charset mainCharset = CharsetICU.forNameICU("BOCU-1");
     private final AnalyzeBlock analyze;
-    private final PdicInfoCache pdicInfoCache;
+    private final IndexCache indexCache;
 
     private boolean match;
     private int searchmax; // 最大検索件数
@@ -60,8 +60,8 @@ class PdicInfo {
     private int[] indexPtr;
     private int lastIndex = 0;
 
-    PdicInfo(@NotNull final File file, final int start, final int size, final int nindex, final boolean blockbits,
-             final int blocksize) throws FileNotFoundException {
+    DictionaryData(@NotNull final File file, final int start, final int size, final int nindex, final boolean blockbits,
+                   final int blocksize) throws FileNotFoundException {
         this.file = file;
         this.start = start;
         this.size = size;
@@ -74,7 +74,7 @@ class PdicInfo {
         this.blocksize = blocksize;
         searchmax = 10;
         sourceStream = new RandomAccessFile(file, "r");
-        pdicInfoCache = new PdicInfoCache(sourceStream, this.start, this.size);
+        indexCache = new IndexCache(sourceStream, this.start, this.size);
         analyze = new AnalyzeBlock();
     }
 
@@ -97,7 +97,7 @@ class PdicInfo {
             }
             final int look = (int) (((long) min + max) / 2);
             final int len = indexPtr[look + 1] - indexPtr[look] - blockBits;
-            final int comp = pdicInfoCache.compare(bytes, 0, bytes.length, indexPtr[look], len);
+            final int comp = indexCache.compare(bytes, 0, bytes.length, indexPtr[look], len);
             if (comp < 0) {
                 max = look;
             } else if (comp > 0) {
@@ -148,7 +148,7 @@ class PdicInfo {
         // インデックスの先頭から見出し語のポインタを拾っていく
         final int nindex = nIndex;
         indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
-        if (pdicInfoCache.createIndex(blockBits, nindex, indexPtr)) {
+        if (indexCache.createIndex(blockBits, nindex, indexPtr)) {
             byte[] buff = new byte[indexPtr.length * 4];
             int p = 0;
             for (int c = 0; c <= nindex; c++) {
@@ -179,9 +179,9 @@ class PdicInfo {
         int blkptr = indexPtr[num] - blockBits;
         lastIndex = num;
         if (blockBits == 4) {
-            return pdicInfoCache.getInt(blkptr);
+            return indexCache.getInt(blkptr);
         } else {
-            return pdicInfoCache.getShort(blkptr);
+            return indexCache.getShort(blkptr);
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.WeakHashMap;
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
-class PdicInfoCache {
+class IndexCache {
     private final boolean fix;
     private final int blockSize;
     private final RandomAccessFile randomAccessFile;
@@ -20,7 +20,7 @@ class PdicInfoCache {
     private final WeakHashMap<Integer, WeakReference<byte[]>> mMap = new WeakHashMap<>();
     private byte[] fixedBuffer;
 
-    PdicInfoCache(final RandomAccessFile file, final int start, final int size) {
+    IndexCache(final RandomAccessFile file, final int start, final int size) {
         randomAccessFile = file;
         this.start = start;
         this.size = size;
@@ -78,7 +78,7 @@ class PdicInfoCache {
 
         int dat = 0;
         if (segmentdata != null) {
-            int b = 0;
+            int b;
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= b;
@@ -101,7 +101,7 @@ class PdicInfoCache {
 
         int dat = 0;
         if (segmentdata != null) {
-            int b = 0;
+            int b;
             b = segmentdata[address++];
             b &= 0xFF;
             dat |= b;
