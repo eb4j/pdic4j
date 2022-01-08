@@ -35,8 +35,8 @@ public final class PdicElement {
     private final String example;
     private final String pronunciation;
 
-    private PdicElement(final byte attribute, final String indexWord, final String headWord, final String translation, final String example,
-                        final String pronunciation) {
+    private PdicElement(final byte attribute, final String indexWord, final String headWord, final String translation,
+                        final String example, final String pronunciation) {
         this.attribute = attribute;
         this.indexWord = indexWord;
         this.headWord = headWord;
