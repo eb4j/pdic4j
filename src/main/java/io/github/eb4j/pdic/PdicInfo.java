@@ -32,7 +32,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.WeakHashMap;
 
 /**
  * @author wak (Apache-2.0)
@@ -55,9 +54,7 @@ class PdicInfo {
 
     protected int[] indexPtr;
 
-    protected Charset mainCharset;
-    protected Charset phoneCharset;
-    protected WeakHashMap<String, ByteBuffer> enchdeCache = new WeakHashMap<>();
+    protected Charset mainCharset = CharsetICU.forNameICU("BOCU-1");
 
     protected AnalyzeBlock analyze;
     protected int lastIndex = 0;
@@ -76,8 +73,6 @@ class PdicInfo {
         this.blocksize = blocksize;
         searchmax = 10;
 
-        phoneCharset = CharsetICU.forNameICU("BOCU-1");
-        mainCharset = CharsetICU.forNameICU("BOCU-1");
         try {
             sourceStream = new RandomAccessFile(file, "r");
             analyze = new AnalyzeBlock();
@@ -109,11 +104,7 @@ class PdicInfo {
         int min = 0;
         int max = nIndex - 1;
 
-        ByteBuffer buffer = enchdeCache.get(word);
-        if (buffer == null) {
-            buffer = encodetoByteBuffer(mainCharset, word);
-            enchdeCache.put(word, buffer);
-        }
+        ByteBuffer buffer = encodetoByteBuffer(mainCharset, word);
         int limit = buffer.limit();
         byte[] bytes = new byte[limit];
         System.arraycopy(buffer.array(), 0, bytes, 0, limit);
@@ -271,7 +262,7 @@ class PdicInfo {
                     analyze.setSearch(word);
                     searchret = analyze.searchWord();
                     // 未発見でEOBの時のみもう一回、回る
-                    if (!searchret && analyze.eob) {
+                    if (!searchret && analyze.isEob()) {
                         continue;
                     }
                 }
@@ -412,9 +403,10 @@ class PdicInfo {
     }
 
     final class AnalyzeBlock {
+        private final Charset mainCharset = CharsetICU.forNameICU("BOCU-1");
         private byte[] buff;
         private boolean longField;
-        private byte[] mWord;
+        private byte[] searchWord;
         private int foundPtr = -1;
         private int nextPtr = -1;
         private final byte[] compBuff = new byte[1024];
@@ -434,9 +426,8 @@ class PdicInfo {
 
         public void setSearch(final String word) {
             ByteBuffer buffer = encodetoByteBuffer(mainCharset, word);
-            enchdeCache.put(word, buffer);
-            mWord = new byte[buffer.limit()];
-            System.arraycopy(buffer.array(), 0, mWord, 0, buffer.limit());
+            searchWord = new byte[buffer.limit()];
+            System.arraycopy(buffer.array(), 0, searchWord, 0, buffer.limit());
         }
 
         public boolean isEob() {
@@ -447,7 +438,7 @@ class PdicInfo {
          * ブロックデータの中から指定語を探す.
          */
         public boolean searchWord() {
-            final byte[] bytes = mWord;
+            final byte[] bytes = searchWord;
             final boolean longfield = longField;
             final byte[] compbuff = compBuff;
             final int wordlen = bytes.length;
@@ -607,7 +598,7 @@ class PdicInfo {
                             qtr += len; // 次のNULLまでスキップ
                         } else if ((eatr & 0x0F) == 0x02) { // 発音
                             int len = getLengthToNextZero(buff, qtr);
-                            elementBuilder.setPhone(decodetoCharBuffer(phoneCharset, buff, qtr, len).toString());
+                            elementBuilder.setPhone(decodetoCharBuffer(mainCharset, buff, qtr, len).toString());
                             qtr += len; // 次のNULLまでスキップ
                         }
                     } else {
@@ -634,7 +625,7 @@ class PdicInfo {
             if (foundPtr == -1) {
                 return false;
             }
-            word = mWord;
+            word = searchWord;
             int wordlen = word.length;
 
             // 訳語データ読込
@@ -665,8 +656,6 @@ class PdicInfo {
                 return false;
             }
             int qtr = ptr;
-            ptr += flen + 1;
-            ptr++;
 
             // 圧縮長
             int complen = buff[qtr++];
@@ -678,7 +667,6 @@ class PdicInfo {
             // 見出し語圧縮位置保存
             int indexStringLen = getLengthToNextZero(buff, qtr) + 1;
             System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
-            qtr += indexStringLen;
             complen += indexStringLen;
 
             // 見出し語の方が短ければ不一致
@@ -704,7 +692,7 @@ class PdicInfo {
             }
             if (equal && incrementptr) {
                 foundPtr = retptr;
-                nextPtr = ptr;
+                nextPtr = ptr + flen + 2;
                 compLen = complen - 1;
             }
             return equal;
