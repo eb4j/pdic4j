@@ -34,12 +34,12 @@ class PdicDictionaryTest {
         PdicDictionary.loadDictionary(file, cache)
             .getEntriesPredictive("japan").forEach {
                 assertAll(
-                    Executable { assertEquals("こんにちは", it.trans) },
-                    Executable { assertEquals("japanese", it.index) },
-                    Executable { assertEquals("Japanese", it.disp) },
-                    Executable { assertEquals(0, it.attr) },
-                    Executable { assertNull(it.phone) },
-                    Executable { assertNull(it.sample) }
+                    Executable { assertEquals("こんにちは", it.translation) },
+                    Executable { assertEquals("japanese", it.indexWord) },
+                    Executable { assertEquals("Japanese", it.headWord) },
+                    Executable { assertEquals(0, it.attribute) },
+                    Executable { assertNull(it.pronunciation) },
+                    Executable { assertNull(it.example) }
                 )
                 return
             }
@@ -50,12 +50,12 @@ class PdicDictionaryTest {
         PdicDictionary.loadDictionary(file, cache)
             .getEntries("japanese").forEach {
                 assertAll(
-                    Executable { assertEquals("こんにちは", it.trans) },
-                    Executable { assertEquals("japanese", it.index) },
-                    Executable { assertEquals("Japanese", it.disp) },
-                    Executable { assertEquals(0, it.attr) },
-                    Executable { assertNull(it.phone) },
-                    Executable { assertNull(it.sample) }
+                    Executable { assertEquals("こんにちは", it.translation) },
+                    Executable { assertEquals("japanese", it.indexWord) },
+                    Executable { assertEquals("Japanese", it.headWord) },
+                    Executable { assertEquals(0, it.attribute) },
+                    Executable { assertNull(it.pronunciation) },
+                    Executable { assertNull(it.example) }
                 )
                 return
             }
@@ -69,12 +69,12 @@ class PdicDictionaryTest {
         assertEquals(20, pdicDictionary.maxSearchCount)
         pdicDictionary.getEntries("japanese").forEach {
                 assertAll(
-                    Executable { assertEquals("こんにちは", it.trans) },
-                    Executable { assertEquals("japanese", it.index) },
-                    Executable { assertEquals("Japanese", it.disp) },
-                    Executable { assertEquals(0, it.attr) },
-                    Executable { assertNull(it.phone) },
-                    Executable { assertNull(it.sample) }
+                    Executable { assertEquals("こんにちは", it.translation) },
+                    Executable { assertEquals("japanese", it.indexWord) },
+                    Executable { assertEquals("Japanese", it.headWord) },
+                    Executable { assertEquals(0, it.attribute) },
+                    Executable { assertNull(it.pronunciation) },
+                    Executable { assertNull(it.example) }
                 )
                 return
         }

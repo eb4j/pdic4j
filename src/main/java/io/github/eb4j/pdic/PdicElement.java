@@ -18,53 +18,82 @@
 
 package io.github.eb4j.pdic;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
+ * PDic dictionary entry data class.
+ * This is POJO data class to hold search result entry.
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
 public final class PdicElement {
-    private final byte attr;
-    private final String index;
-    private final String disp;
-    private final String trans;
-    private final String sample;
-    private final String phone;
+    private final byte attribute;
+    private final String indexWord;
+    private final String headWord;
+    private final String translation;
+    private final String example;
+    private final String pronunciation;
 
-    private PdicElement(final byte attr, final String index, final String disp, final String trans, final String sample,
-                        final String phone) {
-        this.attr = attr;
-        this.index = index;
-        this.disp = disp;
-        this.trans = trans;
-        this.sample = sample;
-        this.phone = phone;
+    private PdicElement(final byte attribute, final String indexWord, final String headWord, final String translation, final String example,
+                        final String pronunciation) {
+        this.attribute = attribute;
+        this.indexWord = indexWord;
+        this.headWord = headWord;
+        this.translation = translation;
+        this.example = example;
+        this.pronunciation = pronunciation;
     }
 
-    public byte getAttr() {
-        return attr;
+    /**
+     * Attribute of entry. (for internal)
+     * @return attribute flag.
+     */
+    byte getAttribute() {
+        return attribute;
     }
 
-    public String getIndex() {
-        return index;
+    /**
+     * Get indexed word of entry.
+     * @return indexed word.
+     */
+    public @NotNull String getIndexWord() {
+        return indexWord;
     }
 
-    public String getDisp() {
-        return disp;
+    /**
+     * Get heading word of entry.
+     * @return head word.
+     */
+    public @NotNull String getHeadWord() {
+        return headWord;
     }
 
-    public String getTrans() {
-        return trans;
+    /**
+     * Get translation clause.
+     * @return clause when exist, otherwise null.
+     */
+    public @Nullable String getTranslation() {
+        return translation;
     }
 
-    public String getSample() {
-        return sample;
+    /**
+     * Get example sentences.
+     * @return sentences when exist, otherwise null.
+     */
+    public @Nullable String getExample() {
+        return example;
     }
 
-    public String getPhone() {
-        return phone;
+    /**
+     * Get pronounciations.
+     * @return pronounciation in phonetic code when exist, otherwise null.
+     */
+    public @Nullable String getPronunciation() {
+        return pronunciation;
     }
 
-    public static final class PdicElementBuilder {
+    static final class PdicElementBuilder {
         private byte attr = 0;
         private String index = null;
         private String disp = null;

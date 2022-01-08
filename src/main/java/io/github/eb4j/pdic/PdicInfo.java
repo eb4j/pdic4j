@@ -237,7 +237,7 @@ class PdicInfo {
                     break;
                 }
                 // 完全一致するかチェック
-                if (res.getIndex().compareTo(word) == 0) {
+                if (res.getIndexWord().compareTo(word) == 0) {
                     match = true;
                 }
                 searchResults.add(res);
