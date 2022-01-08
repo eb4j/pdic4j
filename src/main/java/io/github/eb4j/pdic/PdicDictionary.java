@@ -43,7 +43,7 @@ public class PdicDictionary {
      * @param word keyword to search.
      * @return list of result as PdicElement.
      */
-    public List<PdicElement> getEntries(final String word) {
+    public List<PdicElement> getEntries(final String word) throws IOException {
         if (dicInfo.searchWord(word)) {
             return dicInfo.getResult();
         }
@@ -55,7 +55,7 @@ public class PdicDictionary {
      * @param word keyword to search.
      * @return list of result as PdicElement.
      */
-    public List<PdicElement> getEntriesPredictive(final String word) {
+    public List<PdicElement> getEntriesPredictive(final String word) throws IOException {
         if (dicInfo.searchPrefix(word)) {
             return dicInfo.getResult();
         }

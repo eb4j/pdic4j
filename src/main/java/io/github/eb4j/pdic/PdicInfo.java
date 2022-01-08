@@ -36,8 +36,10 @@ import java.util.List;
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
-@SuppressWarnings("membername")
 class PdicInfo {
+
+    private static final int SECTOR_SIZE = 0x200;
+
     private final RandomAccessFile sourceStream;
     private final File file;
     private final List<PdicElement> searchResults = new ArrayList<>();
@@ -57,15 +59,17 @@ class PdicInfo {
     private int[] indexPtr;
     private int lastIndex = 0;
 
-
-    @SuppressWarnings("avoidinlineconditionals")
     PdicInfo(@NotNull final File file, final int start, final int size, final int nindex, final boolean blockbits,
              final int blocksize) throws FileNotFoundException {
         this.file = file;
         this.start = start;
         this.size = size;
         this.nIndex = nindex;
-        blockBits = (blockbits) ? 4 : 2;
+        if (blockbits) {
+            blockBits = 4;
+        } else {
+            blockBits = 2;
+        }
         this.blocksize = blocksize;
         searchmax = 10;
         sourceStream = new RandomAccessFile(file, "r");
@@ -109,63 +113,59 @@ class PdicInfo {
      *
      * @return true when successfully read block, otherwise false.
      */
-    public boolean readIndexBlock(final File indexcache) {
-        if (sourceStream != null) {
-            bodyPtr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
-            if (indexcache != null) {
-                try (FileInputStream fis = new FileInputStream(indexcache)) {
-                    byte[] buff = new byte[(nIndex + 1) * 4];
-                    int readlen = fis.read(buff);
-                    if (readlen == buff.length) {
-                        indexPtr = new int[nIndex + 1];
-                        int ptr = 0;
-                        for (int i = 0; i <= nIndex; i++) {
-                            int b;
-                            int dat;
-                            b = buff[ptr++];
-                            b &= 0xFF;
-                            dat = b;
-                            b = buff[ptr++];
-                            b &= 0xFF;
-                            dat |= (b << 8);
-                            b = buff[ptr++];
-                            b &= 0xFF;
-                            dat |= (b << 16);
-                            b = buff[ptr++];
-                            b &= 0xFF;
-                            dat |= (b << 24);
-                            indexPtr[i] = dat;
-                        }
-                        return true;
+    public boolean readIndexBlock(final File indexcache) throws IOException {
+        bodyPtr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
+        if (indexcache != null) {
+            try (FileInputStream fis = new FileInputStream(indexcache)) {
+                byte[] buff = new byte[(nIndex + 1) * 4];
+                int readlen = fis.read(buff);
+                if (readlen == buff.length) {
+                    indexPtr = new int[nIndex + 1];
+                    int ptr = 0;
+                    for (int i = 0; i <= nIndex; i++) {
+                        int b;
+                        int dat;
+                        b = buff[ptr++];
+                        b &= 0xFF;
+                        dat = b;
+                        b = buff[ptr++];
+                        b &= 0xFF;
+                        dat |= (b << 8);
+                        b = buff[ptr++];
+                        b &= 0xFF;
+                        dat |= (b << 16);
+                        b = buff[ptr++];
+                        b &= 0xFF;
+                        dat |= (b << 24);
+                        indexPtr[i] = dat;
                     }
-                } catch (IOException ignored) {
+                    return true;
                 }
             }
+        }
 
-            // インデックスの先頭から見出し語のポインタを拾っていく
-            final int nindex = nIndex;
-            indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
-            if (pdicInfoCache.createIndex(blockBits, nindex, indexPtr)) {
-                byte[] buff = new byte[indexPtr.length * 4];
-                int p = 0;
-                for (int c = 0; c <= nindex; c++) {
-                    int data = indexPtr[c];
-                    buff[p++] = (byte) (data & 0xFF);
-                    data >>= 8;
-                    buff[p++] = (byte) (data & 0xFF);
-                    data >>= 8;
-                    buff[p++] = (byte) (data & 0xFF);
-                    data >>= 8;
-                    buff[p++] = (byte) (data & 0xFF);
-                }
-                if (indexcache != null) {
-                    try (FileOutputStream fos = new FileOutputStream(indexcache)) {
-                        fos.write(buff, 0, buff.length);
-                    } catch (IOException ignored) {
-                    }
-                }
-                return true;
+        // インデックスの先頭から見出し語のポインタを拾っていく
+        final int nindex = nIndex;
+        indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
+        if (pdicInfoCache.createIndex(blockBits, nindex, indexPtr)) {
+            byte[] buff = new byte[indexPtr.length * 4];
+            int p = 0;
+            for (int c = 0; c <= nindex; c++) {
+                int data = indexPtr[c];
+                buff[p++] = (byte) (data & 0xFF);
+                data >>= 8;
+                buff[p++] = (byte) (data & 0xFF);
+                data >>= 8;
+                buff[p++] = (byte) (data & 0xFF);
+                data >>= 8;
+                buff[p++] = (byte) (data & 0xFF);
             }
+            if (indexcache != null) {
+                try (FileOutputStream fos = new FileOutputStream(indexcache)) {
+                    fos.write(buff, 0, buff.length);
+                }
+            }
+            return true;
         }
         indexPtr = null;
         return false;
@@ -201,7 +201,7 @@ class PdicInfo {
     }
 
     // 単語を検索する
-    public boolean searchWord(final String word) {
+    public boolean searchWord(final String word) throws IOException {
         // 検索結果クリア
         int cnt = 0;
         searchResults.clear();
@@ -249,7 +249,7 @@ class PdicInfo {
     }
 
     // 前方一致する単語の有無を返す
-    boolean searchPrefix(final String word) {
+    boolean searchPrefix(final String word) throws IOException {
         int ret = searchIndexBlock(word);
 
         for (int blk = 0; blk < 2; blk++) {
@@ -278,24 +278,22 @@ class PdicInfo {
         return searchResults;
     }
 
-    public List<PdicElement> getMoreResult() {
+    public List<PdicElement> getMoreResult() throws IOException {
         searchResults.clear();
-        if (analyze != null) {
-            int cnt = 0;
-            // 前方一致するものだけ結果に入れる
-            while (cnt < searchmax && hasMoreResult(true)) {
-                PdicElement res = analyze.getRecord();
-                if (res == null) {
-                    break;
-                }
-                searchResults.add(res);
-                cnt++;
+        int cnt = 0;
+        // 前方一致するものだけ結果に入れる
+        while (cnt < searchmax && hasMoreResult(true)) {
+            PdicElement res = analyze.getRecord();
+            if (res == null) {
+                break;
             }
+            searchResults.add(res);
+            cnt++;
         }
         return searchResults;
     }
 
-    public boolean hasMoreResult(final boolean incrementptr) {
+    public boolean hasMoreResult(final boolean incrementptr) throws IOException {
         boolean result = analyze.hasMoreResult(incrementptr);
         if (!result) {
             if (analyze.isEob()) {    // EOBなら次のブロック読み出し
@@ -320,44 +318,39 @@ class PdicInfo {
     /**
      * データブロックを読み込み.
      *
-     * @param blkno
-     * @return 読み込まれたデータブロック
+     * @param blkno block number to seek when read.
+     * @return data block read.
+     * @throws IOException when read error happended.
      */
-    byte[] readBlockData(final int blkno) {
-        byte[] buff = new byte[0x200];
+    byte[] readBlockData(final int blkno) throws IOException {
+        byte[] buff = new byte[SECTOR_SIZE];
         byte[] pbuf = buff;
-        try {
-            sourceStream.seek(bodyPtr + (long) blkno * blocksize);
-
-            // 1ブロック分読込(１セクタ分先読み)
-            if (sourceStream.read(pbuf, 0, 0x200) < 0) {
-                return null;
-            }
-
-            // 長さ取得
-            int len = ((int) (pbuf[0])) & 0xFF;
-            len |= (((int) (pbuf[1])) & 0xFF) << 8;
-
-            // ブロック長判定
-            if ((len & 0x8000) != 0) { // 32bit
-                len &= 0x7FFF;
-            }
-            if (len > 0) {
-                // ブロック不足分読込
-                if (len * blocksize > 0x200) {
-                    pbuf = new byte[blocksize * len];
-                    System.arraycopy(buff, 0, pbuf, 0, 0x200);
-                    if (sourceStream.read(pbuf, 0x200, len * blocksize - 0x200) < 0) {
-                        return null;
-                    }
-                }
-            } else {
-                pbuf = null;
-            }
-            return pbuf;
-        } catch (IOException ignored) {
+        sourceStream.seek(bodyPtr + (long) blkno * blocksize);
+        if (sourceStream.read(pbuf, 0, SECTOR_SIZE) < 0) {
+            return null;
         }
-        return null;
+
+        // length of block.
+        int len = ((int) (pbuf[0])) & 0xFF;
+        len |= (((int) (pbuf[1])) & 0xFF) << 8;
+
+        // ブロック長判定
+        if ((len & 0x8000) != 0) { // 32bit
+            len &= 0x7FFF;
+        }
+        if (len > 0) {
+            // ブロック不足分読込
+            if (len * blocksize > 0x200) {
+                pbuf = new byte[blocksize * len];
+                System.arraycopy(buff, 0, pbuf, 0, SECTOR_SIZE);
+                if (sourceStream.read(pbuf, SECTOR_SIZE, len * blocksize - SECTOR_SIZE) < 0) {
+                    return null;
+                }
+            }
+        } else {
+            pbuf = null;
+        }
+        return pbuf;
     }
 
 }
