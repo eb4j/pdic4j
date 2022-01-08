@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ class PdicInfo {
         this.file = file;
         this.start = start;
         this.size = size;
-        nIndex = nindex;
+        this.nIndex = nindex;
         blockBits = (blockbits) ? 4 : 2;
         this.blocksize = blocksize;
         searchmax = 10;
@@ -80,7 +79,7 @@ class PdicInfo {
         phoneCharset = CharsetICU.forNameICU("BOCU-1");
         mainCharset = CharsetICU.forNameICU("BOCU-1");
         try {
-            sourceStream = new RandomAccessFile(this.file, "r");
+            sourceStream = new RandomAccessFile(file, "r");
             analyze = new AnalyzeBlock();
             pdicInfoCache = new PdicInfoCache(sourceStream, this.start, this.size);
         } catch (FileNotFoundException ignored) {
@@ -118,19 +117,13 @@ class PdicInfo {
         int limit = buffer.limit();
         byte[] bytes = new byte[limit];
         System.arraycopy(buffer.array(), 0, bytes, 0, limit);
-        int wordlen = bytes.length;
-
-        int[] indexPtr = this.indexPtr;
-        int blockbits = blockBits;
-        PdicInfoCache pdicInfoCache = this.pdicInfoCache;
-
         for (int i = 0; i < 32; i++) {
             if ((max - min) <= 1) {
                 return min;
             }
             final int look = (int) (((long) min + max) / 2);
-            final int len = indexPtr[look + 1] - indexPtr[look] - blockbits;
-            final int comp = pdicInfoCache.compare(bytes, 0, wordlen, indexPtr[look], len);
+            final int len = indexPtr[look + 1] - indexPtr[look] - blockBits;
+            final int comp = pdicInfoCache.compare(bytes, 0, bytes.length, indexPtr[look], len);
             if (comp < 0) {
                 max = look;
             } else if (comp > 0) {
@@ -156,8 +149,7 @@ class PdicInfo {
                     int readlen = fis.read(buff);
                     if (readlen == buff.length) {
                         final int indexlen = nIndex;
-                        final int[] indexptr = new int[nIndex + 1];
-                        indexPtr = indexptr;
+                        indexPtr = new int[nIndex + 1];
                         int ptr = 0;
                         for (int i = 0; i <= indexlen; i++) {
                             int b;
@@ -174,7 +166,7 @@ class PdicInfo {
                             b = buff[ptr++];
                             b &= 0xFF;
                             dat |= (b << 24);
-                            indexptr[i] = dat;
+                            indexPtr[i] = dat;
                         }
                         return true;
                     }
@@ -184,8 +176,7 @@ class PdicInfo {
 
             // インデックスの先頭から見出し語のポインタを拾っていく
             final int nindex = nIndex;
-            final int[] indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
-            this.indexPtr = indexPtr;
+            indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
             if (pdicInfoCache.createIndex(blockBits, nindex, indexPtr)) {
                 byte[] buff = new byte[indexPtr.length * 4];
                 int p = 0;
@@ -271,9 +262,7 @@ class PdicInfo {
         searchResults.clear();
 
         int ret = searchIndexBlock(word);
-
-        boolean match = false;
-
+        match = false;
         boolean searchret = false;
         while (true) {
             // 最終ブロックは超えない
@@ -439,11 +428,9 @@ class PdicInfo {
         AnalyzeBlock() {
         }
 
-        public void setBuffer(final byte[] buff) {
-            this.buff = buff;
+        public void setBuffer(final byte[] newBuff) {
+            buff = newBuff;
             longField = ((buff[1] & 0x80) != 0);
-            ByteBuffer mBB = ByteBuffer.wrap(buff);
-            mBB.order(ByteOrder.LITTLE_ENDIAN);
             nextPtr = 2;
             eob = false;
             compLen = 0;
@@ -465,7 +452,6 @@ class PdicInfo {
          */
         public boolean searchWord() {
             final byte[] bytes = mWord;
-            final byte[] buff = this.buff;
             final boolean longfield = longField;
             final byte[] compbuff = compBuff;
             final int wordlen = bytes.length;
@@ -506,14 +492,18 @@ class PdicInfo {
 
 
                 // 圧縮長
-                int complen = (int) buff[qtr++];
+                int complen = buff[qtr++];
                 complen &= 0xFF;
 
                 // 見出し語属性 skip
                 qtr++;
 
                 // 見出し語圧縮位置保存
-                while ((compbuff[complen++] = buff[qtr++]) != 0) ;
+                // while ((compbuff[complen++] = buff[qtr++]) != 0) ;
+                int indexStringLen = getLengthToNextZero(buff, qtr) + 1;
+                System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
+                qtr += indexStringLen;
+                complen += indexStringLen;
 
                 // 見出し語の方が短ければ不一致
                 if (complen < wordlen) {
@@ -557,23 +547,22 @@ class PdicInfo {
             if (foundPtr == -1) {
                 return null;
             }
-            final PdicElement.PdicElementBuilder res = new PdicElement.PdicElementBuilder();
+            final PdicElement.PdicElementBuilder elementBuilder = new PdicElement.PdicElementBuilder();
             String indexstr = decodetoCharBuffer(mainCharset, compBuff, 0, compLen).toString();
-            res.setIndex(indexstr);
+            elementBuilder.setIndex(indexstr);
             // ver6対応 見出し語が、<検索インデックス><TAB><表示用文字列>の順に
             // 設定されていてるので、分割する。
             // それ以前のverではdispに空文字列を保持させる。
             final int tab = indexstr.indexOf('\t');
             if (tab == -1) {
-                res.setDisp("");
+                elementBuilder.setDisp("");
             } else {
-                res.setIndex(indexstr.substring(0, tab));
-                res.setDisp(indexstr.substring(tab + 1));
+                elementBuilder.setIndex(indexstr.substring(0, tab));
+                elementBuilder.setDisp(indexstr.substring(tab + 1));
             }
 
-            final byte[] buff = this.buff;
             final boolean longfield = longField;
-            byte attr = 0;
+            byte attr;
 
             // 訳語データ読込
             int ptr = foundPtr;
@@ -594,25 +583,35 @@ class PdicInfo {
             attr = buff[qtr++];
 
             // 見出し語 skip
-            while (buff[qtr++] != 0) ;
+            qtr += getLengthToNextZero(buff, qtr) + 1;
 
             // 訳語
             if ((attr & 0x10) != 0) { // 拡張属性ありの時
                 int trnslen = getLengthToNextZero(buff, qtr);
-                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, trnslen).toString().replace("\r", ""));
+                elementBuilder.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, trnslen)
+                                .toString()
+                                .replace("\r", "")
+                        );
                 qtr += trnslen; // 次のNULLまでスキップ
 
                 // 拡張属性取得
                 byte eatr;
-                while (((eatr = buff[qtr++]) & 0x80) == 0) {
+                while (true) {
+                    eatr = buff[qtr++];
+                    if ((eatr & 0x80) != 0) {
+                        break;
+                    }
                     if ((eatr & (0x10 | 0x40)) == 0) { // バイナリOFF＆圧縮OFFの場合
                         if ((eatr & 0x0F) == 0x01) { // 用例
                             int len = getLengthToNextZero(buff, qtr);
-                            res.setSample(decodetoCharBuffer(mainCharset, buff, qtr, len).toString().replace("\r", ""));
+                            elementBuilder.setSample(decodetoCharBuffer(mainCharset, buff, qtr, len)
+                                    .toString()
+                                    .replace("\r", "")
+                            );
                             qtr += len; // 次のNULLまでスキップ
                         } else if ((eatr & 0x0F) == 0x02) { // 発音
                             int len = getLengthToNextZero(buff, qtr);
-                            res.setPhone(decodetoCharBuffer(phoneCharset, buff, qtr, len).toString());
+                            elementBuilder.setPhone(decodetoCharBuffer(phoneCharset, buff, qtr, len).toString());
                             qtr += len; // 次のNULLまでスキップ
                         }
                     } else {
@@ -622,16 +621,17 @@ class PdicInfo {
                 }
             } else {
                 // 残り全部が訳文
-                res.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr).toString().replace("\r", ""));
+                elementBuilder.setTrans(decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr)
+                        .toString()
+                        .replace("\r", "")
+                );
             }
-            return res.build();
+            return elementBuilder.build();
         }
 
         // 次の項目が検索語に前方一致するかチェックする
         public boolean hasMoreResult(final boolean incrementptr) {
             byte[] word;
-            final byte[] buff = this.buff;
-            final boolean longfield = longField;
             final byte[] compbuff = compBuff;
 
             // next search
@@ -639,7 +639,6 @@ class PdicInfo {
                 return false;
             }
             word = mWord;
-
             int wordlen = word.length;
 
             // 訳語データ読込
@@ -656,7 +655,7 @@ class PdicInfo {
             b <<= 8;
             flen |= (b & 0xFF00);
 
-            if (longfield) {
+            if (longField) {
                 b = buff[ptr++];
                 b <<= 16;
                 flen |= (b & 0xFF0000);
@@ -681,7 +680,10 @@ class PdicInfo {
             qtr++;
 
             // 見出し語圧縮位置保存
-            while ((compbuff[complen++] = buff[qtr++]) != 0) ;
+            int indexStringLen = getLengthToNextZero(buff, qtr) + 1;
+            System.arraycopy(buff, qtr, compbuff, complen, indexStringLen);
+            qtr += indexStringLen;
+            complen += indexStringLen;
 
             // 見出し語の方が短ければ不一致
             if (complen < wordlen) {
