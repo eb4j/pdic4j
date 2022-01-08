@@ -34,7 +34,7 @@ class IndexCache {
     }
 
     byte[] getSegment(final int segment) {
-        byte[] segmentdata = null;
+        byte[] segmentData = null;
 
         if (fix) {
             if (fixedBuffer == null) {
@@ -51,15 +51,15 @@ class IndexCache {
 
         WeakReference<byte[]> ref = mMap.get(segment);
         if (ref != null) {
-            segmentdata = ref.get();
+            segmentData = ref.get();
         }
-        if (segmentdata == null) {
-            segmentdata = new byte[blockSize];
+        if (segmentData == null) {
+            segmentData = new byte[blockSize];
             try {
                 randomAccessFile.seek(start + (long) segment * blockSize);
-                int len = randomAccessFile.read(segmentdata, 0, blockSize);
+                int len = randomAccessFile.read(segmentData, 0, blockSize);
                 if (len == blockSize || len == size % blockSize) {
-                    mMap.put(segment, new WeakReference<>(segmentdata));
+                    mMap.put(segment, new WeakReference<>(segmentData));
                 } else {
                     return null;
                 }
@@ -67,7 +67,7 @@ class IndexCache {
                 return null;
             }
         }
-        return segmentdata;
+        return segmentData;
     }
 
 
@@ -199,24 +199,23 @@ class IndexCache {
         }
     }
 
-
     /**
      * Create index of words.
-     * @param blockbits
-     * @param nindex
+     * @param blockBits
+     * @param nIndex
      * @param indexPtr
      * @return true when success, otherwise false.
      */
-    public boolean createIndex(final int blockbits, final int nindex, final int[] indexPtr) {
+    public boolean createIndex(final int blockBits, final int nIndex, final int[] indexPtr) {
         // インデックスの先頭から見出し語のポインタを拾っていく
-        int blocksize = 64 * 1024;
-        int[] params = new int[]{0, 0, nindex, blocksize, blockbits, 1, 0};
+        int blockSize = 64 * 1024;
+        int[] params = new int[]{0, 0, nIndex, blockSize, blockBits, 1, 0};
 
         boolean hasNext = true;
         for (int i = 0; hasNext; i++) {
             hasNext = countIndexWords(params, getSegment(i), indexPtr);
         }
-        indexPtr[params[0]] = params[1] + blockbits; // ターミネータを入れておく
+        indexPtr[params[0]] = params[1] + blockBits; // ターミネータを入れておく
         return true;
     }
 
