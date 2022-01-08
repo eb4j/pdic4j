@@ -20,6 +20,7 @@ package io.github.eb4j.pdic
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
 import java.io.File
 
 class PdicDictionaryTest {
@@ -31,7 +32,15 @@ class PdicDictionaryTest {
     fun getEntries() {
         PdicDictionary.loadDictionary(file, null)
             .getEntries("japanese").forEach {
-            assertEquals("こんにちは", it.trans)
+                assertAll(
+                    Executable { assertEquals("こんにちは", it.trans) },
+                    Executable { assertEquals("japanese", it.index) },
+                    Executable { assertEquals("Japanese", it.disp) },
+                    Executable { assertEquals(0, it.attr) },
+                    Executable { assertNull(it.phone) },
+                    Executable { assertNull(it.sample) }
+                )
+                return
         }
     }
 }
