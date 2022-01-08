@@ -44,6 +44,14 @@ public class PdicDictionary {
         return result;
     }
 
+    public List<PdicElement> getEntriesPredictive(final String word) {
+        List<PdicElement> result = null;
+        if (dicInfo.searchPrefix(word)) {
+            result = dicInfo.getResult();
+        }
+        return result;
+    }
+
     public static PdicDictionary loadDictionary(final File file, final File cacheFile) throws IOException {
         PdicInfo dicInfo;
         if (!file.isFile()) {
