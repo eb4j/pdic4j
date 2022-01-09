@@ -59,10 +59,10 @@ final class AnalyzeBlock {
      * ブロックデータの中から指定語を探す.
      */
     public boolean searchWord() {
-        int ptr = nextPtr;
+        int savePtr = nextPtr;
         foundPtr = -1;
         nextPtr = -1;
-        return lookUpNext(ptr, false, true);
+        return lookUpNext(savePtr, false, true);
     }
 
     /**
@@ -79,11 +79,11 @@ final class AnalyzeBlock {
 
     private boolean lookUpNext(final int lookPtr, final boolean once, final boolean incrementptr) {
         int ptr = lookPtr;
-        int retptr = ptr;
         int flen;
         int b;
 
         while (true) {
+            int retptr = ptr;
             b = buff[ptr++];
             flen = (b & 0xFF);
 
@@ -105,6 +105,8 @@ final class AnalyzeBlock {
                 return false;
             }
             int qtr = ptr;
+            ptr += flen + 1;
+            ptr++;
 
             // 圧縮長
             int complen = buff[qtr++] & 0xFF;
@@ -115,6 +117,7 @@ final class AnalyzeBlock {
             // 見出し語圧縮位置保存
             int indexStringLen = Utils.getLengthToNextZero(buff, qtr) + 1;
             System.arraycopy(buff, qtr, compBuff, complen, indexStringLen);
+            qtr += indexStringLen;
             complen += indexStringLen;
 
             // 見出し語の方が短ければ不一致
@@ -131,10 +134,8 @@ final class AnalyzeBlock {
             for (int i = 0; i < searchWord.length; i++) {
                 if (compBuff[i] != searchWord[i]) {
                     equal = false;
-                    int cc = compBuff[i];
-                    cc &= 0xFF;
-                    int cw = searchWord[i];
-                    cw &= 0xFF;
+                    int cc = compBuff[i] & 0xFF;
+                    int cw = searchWord[i] & 0xFF;
                     // 超えてたら打ち切る
                     if (cc > cw) {
                         return false;
@@ -145,10 +146,13 @@ final class AnalyzeBlock {
             if (equal) {
                 if (incrementptr) {
                     foundPtr = retptr;
-                    nextPtr = ptr + flen + 2;
+                    nextPtr = ptr;
                     compLen = complen - 1;
                 }
                 return true;
+            }
+            if (once) {
+                return equal;
             }
         }
     }
