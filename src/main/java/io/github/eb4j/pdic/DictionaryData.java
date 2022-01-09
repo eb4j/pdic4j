@@ -116,7 +116,11 @@ class DictionaryData {
      */
     public boolean readIndexBlock(@Nullable final File indexcache) throws IOException {
         bodyPtr = start + size; // 本体位置=( index開始位置＋インデックスのサイズ)
-        if (indexcache != null) {
+        return getIndexFromCache(indexcache) || createIndexAndWriteCache(indexcache);
+    }
+
+    private boolean getIndexFromCache(@Nullable File indexcache) throws IOException {
+        if (indexcache != null && indexcache.isFile()) {
             try (FileInputStream fis = new FileInputStream(indexcache)) {
                 byte[] buff = new byte[(nIndex + 1) * 4];
                 int readlen = fis.read(buff);
@@ -144,24 +148,27 @@ class DictionaryData {
                 }
             }
         }
+        return false;
+    }
 
+    private boolean createIndexAndWriteCache(@Nullable File indexcache) throws IOException {
         // インデックスの先頭から見出し語のポインタを拾っていく
         final int nindex = nIndex;
         indexPtr =  new int[nindex + 1]; // インデックスポインタの配列確保
         if (indexCache.createIndex(blockBits, nindex, indexPtr)) {
-            byte[] buff = new byte[indexPtr.length * 4];
-            int p = 0;
-            for (int c = 0; c <= nindex; c++) {
-                int data = indexPtr[c];
-                buff[p++] = (byte) (data & 0xFF);
-                data >>= 8;
-                buff[p++] = (byte) (data & 0xFF);
-                data >>= 8;
-                buff[p++] = (byte) (data & 0xFF);
-                data >>= 8;
-                buff[p++] = (byte) (data & 0xFF);
-            }
             if (indexcache != null) {
+                byte[] buff = new byte[indexPtr.length * 4];
+                int p = 0;
+                for (int c = 0; c <= nindex; c++) {
+                    int data = indexPtr[c];
+                    buff[p++] = (byte) (data & 0xFF);
+                    data >>= 8;
+                    buff[p++] = (byte) (data & 0xFF);
+                    data >>= 8;
+                    buff[p++] = (byte) (data & 0xFF);
+                    data >>= 8;
+                    buff[p++] = (byte) (data & 0xFF);
+                }
                 try (FileOutputStream fos = new FileOutputStream(indexcache)) {
                     fos.write(buff, 0, buff.length);
                 }
