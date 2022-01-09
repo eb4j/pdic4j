@@ -164,16 +164,16 @@ final class AnalyzeBlock {
         }
         final PdicElement.PdicElementBuilder elementBuilder = new PdicElement.PdicElementBuilder();
         String indexstr = Utils.decodetoCharBuffer(mainCharset, compBuff, 0, compLen).toString();
-        elementBuilder.setIndex(indexstr);
+        elementBuilder.setIndexWord(indexstr);
         // ver6対応 見出し語が、<検索インデックス><TAB><表示用文字列>の順に
         // 設定されていてるので、分割する。
         // それ以前のverではdispに空文字列を保持させる。
         final int tab = indexstr.indexOf('\t');
         if (tab == -1) {
-            elementBuilder.setDisp("");
+            elementBuilder.setHeadWord("");
         } else {
-            elementBuilder.setIndex(indexstr.substring(0, tab));
-            elementBuilder.setDisp(indexstr.substring(tab + 1));
+            elementBuilder.setIndexWord(indexstr.substring(0, tab));
+            elementBuilder.setHeadWord(indexstr.substring(tab + 1));
         }
 
         byte attr;
@@ -195,7 +195,7 @@ final class AnalyzeBlock {
 
         // 見出し語属性 skip
         attr = buff[qtr++];
-        elementBuilder.setAttr(attr);
+        elementBuilder.setAttribute(attr);
 
         // 見出し語 skip
         qtr += Utils.getLengthToNextZero(buff, qtr) + 1;
@@ -203,7 +203,7 @@ final class AnalyzeBlock {
         // 訳語
         if ((attr & 0x10) != 0) { // 拡張属性ありの時
             int trnslen = Utils.getLengthToNextZero(buff, qtr);
-            elementBuilder.setTrans(Utils.decodetoCharBuffer(mainCharset, buff, qtr, trnslen)
+            elementBuilder.setTranslation(Utils.decodetoCharBuffer(mainCharset, buff, qtr, trnslen)
                     .toString()
                     .replace("\r", "")
             );
@@ -219,14 +219,14 @@ final class AnalyzeBlock {
                 if ((eatr & (0x10 | 0x40)) == 0) { // バイナリOFF＆圧縮OFFの場合
                     if ((eatr & 0x0F) == 0x01) { // 用例
                         int len = Utils.getLengthToNextZero(buff, qtr);
-                        elementBuilder.setSample(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len)
+                        elementBuilder.setExample(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len)
                                 .toString()
                                 .replace("\r", "")
                         );
                         qtr += len; // 次のNULLまでスキップ
                     } else if ((eatr & 0x0F) == 0x02) { // 発音
                         int len = Utils.getLengthToNextZero(buff, qtr);
-                        elementBuilder.setPhone(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len).toString());
+                        elementBuilder.setPronunciation(Utils.decodetoCharBuffer(mainCharset, buff, qtr, len).toString());
                         qtr += len; // 次のNULLまでスキップ
                     }
                 } else {
@@ -236,7 +236,7 @@ final class AnalyzeBlock {
             }
         } else {
             // 残り全部が訳文
-            elementBuilder.setTrans(Utils.decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr)
+            elementBuilder.setTranslation(Utils.decodetoCharBuffer(mainCharset, buff, qtr, nextPtr - qtr)
                     .toString()
                     .replace("\r", "")
             );

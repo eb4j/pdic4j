@@ -94,39 +94,39 @@ public final class PdicElement {
     }
 
     static final class PdicElementBuilder {
-        private byte attr = 0;
-        private String index = null;
-        private String disp = null;
-        private String trans = null;
-        private String sample = null;
-        private String phone = null;
+        private byte attribute = 0;
+        private String indexWord = null;
+        private String headWord = null;
+        private String translation = null;
+        private String example = null;
+        private String pronunciation = null;
 
-        public void setAttr(final byte attr) {
-            this.attr = attr;
+        public void setAttribute(final byte attribute) {
+            this.attribute = attribute;
         }
 
-        public void setIndex(final String index) {
-            this.index = index;
+        public void setIndexWord(final String indexWord) {
+            this.indexWord = indexWord;
         }
 
-        public void setDisp(final String disp) {
-            this.disp = disp;
+        public void setHeadWord(final String headWord) {
+            this.headWord = headWord;
         }
 
-        public void setTrans(final String trans) {
-            this.trans = trans;
+        public void setTranslation(final String translation) {
+            this.translation = translation;
         }
 
-        public void setSample(final String sample) {
-            this.sample = sample;
+        public void setExample(final String example) {
+            this.example = example;
         }
 
-        public void setPhone(final String phone) {
-            this.phone = phone;
+        public void setPronunciation(final String pronunciation) {
+            this.pronunciation = pronunciation;
         }
 
         public PdicElement build() {
-            return new PdicElement(attr, index, disp, trans, sample, phone);
+            return new PdicElement(attribute, indexWord, headWord, translation, example, pronunciation);
         }
     }
 }
