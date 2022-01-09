@@ -9,7 +9,7 @@ PDIC4j is a parser library for PDIC/Unicode dictionary.
 
 ## Development status
 
-A status of library development is considered as `Alpha`.
+A status of library development is considered as `Beta`.
 
 
 
@@ -23,7 +23,7 @@ A status of library development is considered as `Alpha`.
 <dependency>
   <groupId>io.github.eb4j</groupId>
   <artifactId>pdic4j</artifactId>
-  <version>0.3.0</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 
@@ -34,7 +34,7 @@ A status of library development is considered as `Alpha`.
 <details>
 
 ```groovy
-implementation 'io.github.eb4j:pdic4j:0.3.0'
+implementation 'io.github.eb4j:pdic4j:0.3.2'
 ```
 </details>
 
@@ -43,7 +43,7 @@ implementation 'io.github.eb4j:pdic4j:0.3.0'
 <details>
 
 ```kotlin
-implementation("io.github.eb4j:pdic4j:0.3.0")
+implementation("io.github.eb4j:pdic4j:0.3.2")
 ```
 
 </details>
@@ -53,7 +53,7 @@ implementation("io.github.eb4j:pdic4j:0.3.0")
 <details>
 
 ```
-libraryDependencies += "io.github.eb4j" % "pdic4j" % "0.3.0"
+libraryDependencies += "io.github.eb4j" % "pdic4j" % "0.3.2"
 ```
 
 </details>
