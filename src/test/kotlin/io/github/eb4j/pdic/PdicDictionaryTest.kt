@@ -81,8 +81,8 @@ class PdicDictionaryTest {
 
     @Test
     fun getEntriesWithCacheCreation() {
-        val newCache: Path = kotlin.io.path.createTempFile("pdic4j")
-        PdicDictionary.loadDictionary(file, newCache.toFile())
+        val newCache: Path = kotlin.io.path.createTempDirectory("pdic4j")
+        PdicDictionary.loadDictionary(file, newCache.resolve("Sample.dic.idx").toFile())
             .getEntries("japanese").forEach {
                 assertAll(
                     Executable { assertEquals("こんにちは", it.translation) },
