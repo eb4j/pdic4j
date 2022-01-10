@@ -18,29 +18,24 @@
 
 package io.github.eb4j.pdic
 
+import static org.junit.Assert.*
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.Assumptions
-import java.io.File
+
 
 class PdicExternalDataTest {
 
     @Test
-    fun getEntriesWithCJDictionary() {
-        val file = File("/tmp/chinese.dic")
+    void getEntriesWithCJDictionary() {
+        def file = new File("/tmp/chinese.dic")
         Assumptions.assumeTrue(file.isFile())
-        val dictionary = PdicDictionary.loadDictionary(file, null)
-        Assertions.assertNotNull(dictionary)
-        dictionary.getEntries("语言学").forEach {
-                Assertions.assertAll(
-                    Executable { Assertions.assertEquals("yu3yan2xue2\n言語学", it.translation) },
-                    Executable { Assertions.assertEquals("语言学", it.indexWord) },
-                    Executable { Assertions.assertEquals("语言学", it.headWord) },
-                )
-                return
-            }
-        Assertions.fail<String>("Entry not found")
+        def dictionary = PdicDictionary.loadDictionary(file, null)
+        assertNotNull(dictionary)
+        def ele = dictionary.getEntries("语言学").get(0)
+        assertEquals("语言学", ele.indexWord)
+        assertTrue(ele.translation.contains("言語学"))
+        assertTrue(ele.headWord.contains("语言学"))
     }
-
 }

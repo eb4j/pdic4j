@@ -19,6 +19,7 @@
 package io.github.eb4j.pdic;
 
 import com.ibm.icu.charset.CharsetICU;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -169,7 +170,7 @@ class DictionaryData {
                     data >>= 8;
                     buff[p++] = (byte) (data & 0xFF);
                 }
-                try (FileOutputStream fos = new FileOutputStream(indexcache)) {
+                try (FileOutputStream fos = FileUtils.openOutputStream(indexcache)) {
                     fos.write(buff, 0, buff.length);
                 }
             }

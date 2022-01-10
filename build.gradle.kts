@@ -2,10 +2,10 @@ plugins {
     checkstyle
     jacoco
     signing
+    groovy
     `java-library`
     `java-library-distribution`
     `maven-publish`
-    kotlin("jvm") version "1.6.10"
     id("com.github.spotbugs") version "5.0.4"
     id("com.diffplug.spotless") version "6.1.2"
     id("com.github.kt3k.coveralls") version "2.12.0"
@@ -23,8 +23,10 @@ repositories {
 dependencies {
     implementation("org.jetbrains:annotations:23.0.0")
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    implementation("commons-io:commons-io:2.6")
     implementation("com.ibm.icu:icu4j-charset:70.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.codehaus.groovy:groovy-all:3.0.8")
 }
 
 tasks.getByName<Test>("test") {
