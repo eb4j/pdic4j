@@ -28,13 +28,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author wak (Apache-2.0)
  * @author Hiroshi Miura
  */
 public class PdicDictionary {
-    private final DictionaryData dicInfo;
+    private final DictionaryData dictionaryData;
     private static final int HEADER_SIZE = 256;
 
     /**
@@ -42,8 +43,8 @@ public class PdicDictionary {
      */
     public static final int DEFAULT_MAX_RESULTS = 10;
 
-    public PdicDictionary(final DictionaryData dicInfo) {
-        this.dicInfo = dicInfo;
+    public PdicDictionary(final DictionaryData dictionaryData) {
+        this.dictionaryData = dictionaryData;
     }
 
     /**
@@ -53,8 +54,10 @@ public class PdicDictionary {
      * @throws IOException when error occurred.
      */
     public List<PdicElement> getEntries(@NotNull final String word) throws IOException {
-        if (dicInfo.searchWord(word)) {
-            return dicInfo.getResult();
+        if (dictionaryData.searchWord(word) && dictionaryData.hasExactMatch()) {
+            return dictionaryData.getResult().stream()
+                    .filter(en -> en.getIndexWord().equals(word))
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
@@ -66,8 +69,8 @@ public class PdicDictionary {
      * @throws IOException when error occurred.
      */
     public List<PdicElement> getEntriesPredictive(@NotNull final String word) throws IOException {
-        if (dicInfo.searchPrefix(word)) {
-            return dicInfo.getResult();
+        if (dictionaryData.searchWord(word)) {
+            return dictionaryData.getResult();
         }
         return Collections.emptyList();
     }
@@ -77,7 +80,7 @@ public class PdicDictionary {
      * @param count max count.
      */
     public void setMaxSearchCount(final int count) {
-        dicInfo.setSearchMax(count);
+        dictionaryData.setSearchMax(count);
     }
 
     /**
@@ -85,7 +88,7 @@ public class PdicDictionary {
      * @return max search count.
      */
     public int getMaxSearchCount() {
-        return dicInfo.getSearchMax();
+        return dictionaryData.getSearchMax();
     }
 
     /**
