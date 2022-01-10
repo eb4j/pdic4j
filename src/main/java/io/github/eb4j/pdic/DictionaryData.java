@@ -193,12 +193,8 @@ class DictionaryData {
         }
     }
 
-    boolean isMatch() {
+    boolean hasExactMatch() {
         return match;
-    }
-
-    public String getFilename() {
-        return file.getName();
     }
 
     public int getSearchMax() {
@@ -254,33 +250,7 @@ class DictionaryData {
                 // 取得最大件数超えたら打ち切り
             } while (cnt < searchmax && hasMoreResult(true));
         }
-        return match;
-    }
-
-    // 前方一致する単語の有無を返す
-    boolean searchPrefix(final String word) throws IOException {
-        int ret = searchIndexBlock(word);
-
-        for (int blk = 0; blk < 2; blk++) {
-            // 最終ブロックは超えない
-            if (ret + blk >= nIndex) {
-                break;
-            }
-            int block = getBlockNo(ret + blk);
-
-            // 該当ブロック読み出し
-            byte[] pblk = readBlockData(block);
-
-            if (pblk != null) {
-                analyze.setBuffer(pblk);
-                analyze.setSearch(word);
-
-                if (analyze.searchWord()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return searchret;
     }
 
     List<PdicElement> getResult() {

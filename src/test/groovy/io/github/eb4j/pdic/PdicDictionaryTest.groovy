@@ -28,7 +28,7 @@ class PdicDictionaryTest {
     def file = new File(PdicDictionaryTest.class.getResource("/Sample.dic").toURI().path)
     def cache = new File(file.absolutePath + ".idx")
 
-    // @Test
+    @Test
     void getEntriesPredictive() {
         PdicDictionary dictionary = PdicDictionary.loadDictionary(file, cache)
         def elements = dictionary.getEntriesPredictive("japan")

@@ -45,18 +45,27 @@ final class AnalyzeBlock {
         compLen = 0;
     }
 
+    /**
+     * Set search word.
+     * @param word keyword.
+     */
     public void setSearch(final String word) {
         ByteBuffer buffer = Utils.encodetoByteBuffer(mainCharset, word);
         searchWord = new byte[buffer.limit()];
         System.arraycopy(buffer.array(), 0, searchWord, 0, buffer.limit());
     }
 
+    /**
+     * Is pointer end-of-block?
+     * @return true when eob, otherwise false.
+     */
     public boolean isEob() {
         return eob;
     }
 
     /**
      * ブロックデータの中から指定語を探す.
+     * @return true when word is found in prefix search.
      */
     public boolean searchWord() {
         int savePtr = nextPtr;
@@ -77,6 +86,13 @@ final class AnalyzeBlock {
         return lookUpNext(nextPtr, true, incrementptr);
     }
 
+    /**
+     * Lookup index word and compare with search word.
+     * @param lookPtr dictinoary data pointer to start search.
+     * @param once true when want not to loop.
+     * @param incrementptr true when update pointer for dictionary data.
+     * @return true when prefix search succeeded, otherwise false.
+     */
     private boolean lookUpNext(final int lookPtr, final boolean once, final boolean incrementptr) {
         int ptr = lookPtr;
         int flen;
