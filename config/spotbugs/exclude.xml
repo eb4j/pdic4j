@@ -8,4 +8,14 @@
     <Class name="io.github.eb4j.pdic.PdicDictionary"/>
     <Bug code="EI2"/>
   </Match>
+  <Match>
+    <Or>
+      <Class name="io.github.eb4j.pdic.PdicExternalDataTest"/>
+      <Class name="io.github.eb4j.pdic.PdicDictionaryTest"/>
+    </Or>
+    <Or>
+      <Bug code="EI"/>
+      <Bug code="EI2"/>
+    </Or>
+  </Match>
 </FindBugsFilter>
