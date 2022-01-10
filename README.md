@@ -34,7 +34,7 @@ A status of library development is considered as `Beta`.
 <details>
 
 ```groovy
-implementation 'io.github.eb4j:pdic4j:0.3.2'
+implementation 'io.github.eb4j:pdic4j:0.3.3'
 ```
 </details>
 
@@ -43,7 +43,7 @@ implementation 'io.github.eb4j:pdic4j:0.3.2'
 <details>
 
 ```kotlin
-implementation("io.github.eb4j:pdic4j:0.3.2")
+implementation("io.github.eb4j:pdic4j:0.3.3")
 ```
 
 </details>
@@ -53,7 +53,7 @@ implementation("io.github.eb4j:pdic4j:0.3.2")
 <details>
 
 ```
-libraryDependencies += "io.github.eb4j" % "pdic4j" % "0.3.2"
+libraryDependencies += "io.github.eb4j" % "pdic4j" % "0.3.3"
 ```
 
 </details>
