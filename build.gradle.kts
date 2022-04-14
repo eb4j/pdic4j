@@ -24,7 +24,7 @@ dependencies {
     implementation("org.jetbrains:annotations:23.0.0")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("commons-io:commons-io:2.11.0")
-    implementation("com.ibm.icu:icu4j-charset:70.1")
+    implementation("com.ibm.icu:icu4j-charset:71.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("org.codehaus.groovy:groovy-all:3.0.10")
 }
