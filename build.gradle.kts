@@ -26,7 +26,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
     implementation("com.ibm.icu:icu4j-charset:71.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testImplementation("org.codehaus.groovy:groovy-all:3.0.10")
+    testImplementation("org.codehaus.groovy:groovy-all:3.0.11")
 }
 
 tasks.getByName<Test>("test") {
