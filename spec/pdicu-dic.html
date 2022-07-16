@@ -1,0 +1,1893 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDIC/Unicode辞書形式仕様書 &#8212; pdic4j  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/haiku.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="About PDIC specification" href="README.html" /> 
+  </head><body>
+      <div class="header" role="banner"><h1 class="heading"><a href="../index.html">
+          <span>pdic4j  documentation</span></a></h1>
+        <h2 class="heading"><span>PDIC/Unicode辞書形式仕様書</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="README.html">About PDIC specification</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="pdic-unicode">
+<h1>PDIC/Unicode辞書形式仕様書<a class="headerlink" href="#pdic-unicode" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">第0.90版</p>
+<p class="rubric">2007.7.24</p>
+<p class="rubric"><a class="reference external" href="mailto:SGM00353&#37;&#52;&#48;niftyserve&#46;or&#46;jp">SGM00353<span>&#64;</span>niftyserve<span>&#46;</span>or<span>&#46;</span>jp</a> TaN</p>
+<div class="section" id="id1">
+<h2>1. はじめに<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>　この仕様書はPersonal Dictionary(略してPDIC) という英和辞書検索アプリケーションで使用している辞書の構造を述べています。
+PDICは2008年現在、DOS,Windows(3.1, 95, 98, Me, NT4.0, 2000, XP,Vista),WindowsCE(PocketPC)上で動作しています。</p>
+<p>　この辞書の特徴は単一キーで、検索が高速であるところです。登録データはブロックごとに分割した領域に格納することにより、インデックス部を最低限に抑え、コンパクトな辞書となっています。</p>
+<p>この仕様書はプログラマ向けのもので、一般ユーザが読むべきものではありません。また、プログラミングに長けている人でもこの仕様書は難解です。というのは、この仕様書をメモ代わりに使用しているため、読者が理解しやすいように、というより、備忘録としているためです。</p>
+</div>
+<div class="section" id="id2">
+<h2>2. 辞書構造概略<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>2.1. 辞書の種類<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>PDICには現在公開されているもので次の種類があります。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 13%" />
+<col style="width: 73%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>辞書バージョン</p></td>
+<td><p>一般名称</p></td>
+<td><p>対応アプリケーション</p></td>
+</tr>
+<tr class="row-even"><td><p>1.00</p></td>
+<td><p>旧辞書形式</p></td>
+<td><p>DOS版PDIC Ver.3.xx～Ver.4.xx</p></td>
+</tr>
+<tr class="row-odd"><td><p>2.00</p></td>
+<td><p>新辞書形式1</p></td>
+<td><p>DOS版PDIC Ver.5.xx以降及びPDIC for Windows(16bit版,32bit版)</p></td>
+</tr>
+<tr class="row-even"><td><p>3.00</p></td>
+<td><p>新辞書形式2</p></td>
+<td><p>PDIC for Windows (32bit版)</p></td>
+</tr>
+<tr class="row-odd"><td><p>4.00</p></td>
+<td><p>Hyper辞書形式</p></td>
+<td><p>PDIC for Win32 Ver.3.xx以降</p></td>
+</tr>
+<tr class="row-even"><td><p>5.00</p></td>
+<td><p>Hyper辞書形式</p></td>
+<td><p>PDIC for Win32 Ver.5.00以降    （現在read/writeのみ、新規作成はできない）</p></td>
+</tr>
+<tr class="row-odd"><td><p>5.00</p></td>
+<td><p>Unicode辞書</p></td>
+<td><p>PDIC/Unicode（初期）</p></td>
+</tr>
+<tr class="row-even"><td><p>6.00</p></td>
+<td><p>Unicode辞書</p></td>
+<td><p>PDIC/Unicode (～Ver.0.70)</p></td>
+</tr>
+<tr class="row-odd"><td><p>6.10</p></td>
+<td><p>Unicode辞書</p></td>
+<td><p>PDIC/Unicode (Ver.0.80～)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h3>2.2. 各辞書形式の内容<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 18%" />
+<col style="width: 12%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 13%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>辞書形式</p></th>
+<th class="head"><p>辞書サイズ</p></th>
+<th class="head"><p>最大見出語長</p></th>
+<th class="head"><p>最大訳語長</p></th>
+<th class="head"><p>最大用例長</p></th>
+<th class="head"><p>最大発音記号長</p></th>
+<th class="head"><p>他</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">旧辞書形式</div>
+<div class="line">1.00</div>
+<div class="line">OLDDIC</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">スモール辞書</div>
+<div class="line">ミディアム辞書</div>
+<div class="line">ラージ辞書</div>
+</div>
+</td>
+<td><p>忘れた</p></td>
+<td><p>忘れた</p></td>
+<td><p>忘れた</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">新辞書形式１</div>
+<div class="line">2.00</div>
+<div class="line">NEWDIC</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">タイニィ辞書</div>
+<div class="line">スモール辞書</div>
+<div class="line">ミディアム辞書</div>
+<div class="line">ラージ辞書</div>
+</div>
+</td>
+<td><p>128バイト</p></td>
+<td><p>300バイト</p></td>
+<td><p>300バイト</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">新辞書形式２</div>
+<div class="line">3.00</div>
+<div class="line">NEWDIC2</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">タイニィ辞書</div>
+<div class="line">スモール辞書</div>
+<div class="line">ミディアム辞書</div>
+<div class="line">ラージ辞書</div>
+</div>
+</td>
+<td><p>248バイト</p></td>
+<td><p>3000バイト</p></td>
+<td><p>20,000バイト
+(圧縮対応)</p></td>
+<td><p>1,000バイト</p></td>
+<td><div class="line-block">
+<div class="line">ファイルリンクオブジェクト</div>
+<div class="line">OLEオブジェクト</div>
+<div class="line">圧縮対応</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Hyper辞書形式</div>
+<div class="line">4.00</div>
+<div class="line">NEWDIC3</div>
+</div>
+</td>
+<td><p>辞書サイズの区別はない</p></td>
+<td><p>248バイト</p></td>
+<td><p>3000バイト</p></td>
+<td><p>20,000バイト
+(圧縮対応)</p></td>
+<td><p>1,000バイト</p></td>
+<td><div class="line-block">
+<div class="line">ファイルリンクオブジェクト</div>
+<div class="line">OLEオブジェクト</div>
+<div class="line">圧縮対応</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Hyper辞書形式</div>
+<div class="line">5.00</div>
+<div class="line">NEWDIC4</div>
+</div>
+</td>
+<td><p>辞書サイズの区別はない</p></td>
+<td><p>248バイト</p></td>
+<td><p>3000バイト</p></td>
+<td><p>20,000バイト
+(圧縮対応)</p></td>
+<td><p>1,000バイト</p></td>
+<td><div class="line-block">
+<div class="line">ファイルリンクオブジェクト</div>
+<div class="line">OLEオブジェクト</div>
+<div class="line">圧縮対応</div>
+<div class="line">（辞書順辞書対応）</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Unicode辞書</div>
+<div class="line">5.00</div>
+<div class="line">NEWDIC4</div>
+<div class="line"><br /></div>
+</div>
+</td>
+<td><p>辞書サイズの区別はない</p></td>
+<td><p>248バイト</p></td>
+<td><p>3000バイト</p></td>
+<td><p>20,000バイト
+(圧縮対応)</p></td>
+<td><p>1,000バイト</p></td>
+<td><div class="line-block">
+<div class="line">ファイルリンクオブジェクト</div>
+<div class="line">OLEオブジェクト</div>
+<div class="line-block">
+<div class="line">圧縮対応</div>
+</div>
+<div class="line">（辞書順辞書対応）</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Unicode辞書２</div>
+<div class="line">6.00</div>
+<div class="line">NEWDIC5</div>
+<div class="line"><br /></div>
+</div>
+</td>
+<td><p>辞書サイズの区別はない</p></td>
+<td><p>248バイト</p></td>
+<td><p>10000バイト</p></td>
+<td><dl class="simple">
+<dt>100,000バイト</dt><dd><p>(圧縮対応)</p>
+</dd>
+</dl>
+</td>
+<td><p>1,000バイト</p></td>
+<td><div class="line-block">
+<div class="line">ファイルリンクオブジェクト</div>
+<div class="line">OLEオブジェクト</div>
+<div class="line">圧縮対応</div>
+<div class="line">見出語検索キー</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line">Unicode辞書３</div>
+<div class="line">6.10</div>
+<div class="line">NEWDIC51</div>
+</div>
+</td>
+<td><p>同上</p></td>
+<td><p>1024バイト</p></td>
+<td><p>256Kバイト</p></td>
+<td><p>256Kバイト</p></td>
+<td><p>同上</p></td>
+<td><p>同上</p></td>
+</tr>
+</tbody>
+</table>
+<p>この仕様書では、上表のUnicode辞書３のみについて述べます。それ以前の辞書については「PDIC辞書形式仕様書」を参照してください。</p>
+</div>
+<div class="section" id="id5">
+<h3>2.3. 定義<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>以降現れるC言語の型宣言などは次のようになっています。</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">uchar</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">byte</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">ushort</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">word</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">uint</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">ulong</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="unicode-bocu-hyper-ver-6-00-ver-6-10">
+<h2>3. Unicode(BOCU) 辞書 (Hyper辞書形式 Ver.6.00, Ver.6.10)<a class="headerlink" href="#unicode-bocu-hyper-ver-6-00-ver-6-10" title="Permalink to this headline">¶</a></h2>
+<p>Unicodeに対応した辞書形式です。文字コードにはBOCU方式の圧縮を行ったUnicodeを用います。BOCUはBinary-Ordered
+Compression for Unicodeの略で、Unicodeに向いた簡単で便利な圧縮方法です。</p>
+<ul>
+<li><p>文字コードはすべてBOCU1 encoding</p></li>
+<li><p>各項目の最大バイト数の制限を緩和（カッコ内は旧バージョン時）</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>見出語 1,024（248）バイト</p></li>
+<li><p>訳語 256K (3,000) バイト</p></li>
+<li><p>用例 256K(20,000) バイト</p></li>
+<li><p>発音記号 1,000 (1,000) バイト</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>格納できる文字数は文字の種類と圧縮後のサイズに依存するため不定</p></li>
+</ul>
+<p>Ver.6.00とVer.6.10の違いは登録できる文字数の最大長です。</p>
+<div class="section" id="bocu-1">
+<h3>3.1. BOCU-1圧縮方式<a class="headerlink" href="#bocu-1" title="Permalink to this headline">¶</a></h3>
+<p>指定されたところを除き、文字コードにはBOCU-１ Encodingを使用しています。</p>
+<p>（BOCUの詳細については<a class="reference external" href="http://www-6.ibm.com/jp/developerworks/unicode/010921/j_u-binary.html">http://www-6.ibm.com/jp/developerworks/unicode/010921/j_u-binary.html</a>
+などを参考）</p>
+<p>BOCUの特徴は、参考URLに記載されている通り、</p>
+<ul class="simple">
+<li><p>欧米文字はほぼ１バイト（UTF-8とほぼ同等）</p></li>
+<li><p>日本語ではほぼ２バイト（UTF-8なら３バイト）</p></li>
+<li><p>バイナリ—オーダーが保存される（文字列ソートにおける前後関係を圧縮したまま調べることができる）</p></li>
+</ul>
+<p>という特徴があり、辞書へ保存するには適した形式です。</p>
+<p>さらに、</p>
+<ul class="simple">
+<li><p>UTF-8やUTF-16といったエンコーディングに依存せず、同等に対応できる(CodePointそのものを扱っているため)</p></li>
+<li><p>エンディアンに依存しない</p></li>
+<li><p>文字列終端はシングルバイトの’0’で表す</p></li>
+</ul>
+<p>という特徴もあります。</p>
+<p>欠点としては、圧縮伸長処理が必要になります。しかしBOCUは単純な差分による圧縮方式であるため、ディスクアクセスに比べれば小さいオーバーヘッドで済み、パフォーマンスに大きな差はないはずです。</p>
+<div class="section" id="id6">
+<h4>3.1.1. BOCU-1の圧縮効率と検索速度<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<p>例えばShiftJISで書かれた英和辞書テキストファイルをUnicodeへ変換しBOCU-1圧縮した場合、だいたい同じサイズくらいになるはずです。</p>
+<p>検索にかかる時間についてもBOCU-1の伸長処理が余計にかかるため検索がほんの少し遅くなりますが、ディスクアクセスへの時間が支配的であるため無視できます。仮にディスクをRAMDISKなど高速なデバイスにした場合でも、辞書全体の処理に比べればBOCU-1の伸長処理は非常に小さいものと思われます。</p>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>3.2. 辞書全体の構成<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ヘッダー部</p></td>
+<td><p>固定長(1,024バイト)</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張ヘッダー部</p></td>
+<td><p>可変長(最大約4Gバイト(理論値)) 新規作成時は0バイト。</p></td>
+</tr>
+<tr class="row-odd"><td><p>インデックス部</p></td>
+<td><p>可変長(1,024バイト単位) 何もデータが無いと0バイト。最大1,024×32,767 = 32M</p></td>
+</tr>
+<tr class="row-even"><td><p>データ部</p></td>
+<td><p>可変長(1,024バイト単位) 1,024バイトを１物理ブロック単位とする
+インデックス部により論理ブロック番号から物理ブロック番号にマッピングされる。
+１つの論理ブロックには連続した複数の物理ブロックを示すことができる。
+この場合の連続ブロック数は32,767個までなので、32,767×1,024= 33,553,408(32MB)バイトが最大の１つの論理的なブロックとなる。
+物理ブロック番号は理論上は最大 2,147,418,112(2G)、実際はファイルサイズの制限があるためそれ以下となる。</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id8">
+<h3>3.3.  見出語検索キー<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id9">
+<h3>3.4. ヘッダー部<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>ヘッダー部は1,024バイトの固定長</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 28%" />
+<col style="width: 19%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名前</p></th>
+<th class="head"><p>型</p></th>
+<th class="head"><p>説明</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>headername</p></td>
+<td><p>char
+*100</p></td>
+<td colspan="2"><p>ヘッダー文字列。とくに意味はないが、以下のような文字列が必ず入る。
+“ =============== Dictionary for PDIC =============== 　 “ (ASCII encoding)</p></td>
+</tr>
+<tr class="row-odd"><td><p>dictitle</p></td>
+<td><p>char
+*40</p></td>
+<td colspan="2"><p>辞書名。現在は未使用でNULLでパディング（BOCU1 encodingを使用）</p></td>
+</tr>
+<tr class="row-even"><td><p>version</p></td>
+<td><p>short</p></td>
+<td colspan="2"><p>辞書のバージョン。上位バイトはメジャー番号、下位バイトはマイナー番号</p>
+<p>0x0600 : Ver.6.00</p>
+<p>0x0610 : Ver.6.10</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>lword</p></td>
+<td><p>ushort</p></td>
+<td colspan="2"><p>見出語の最大長。現在未参照。</p>
+<p>248 : Ver.6.00</p>
+<p>1,024 : Ver.6.10</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>ljapa</p></td>
+<td><p>ushort</p></td>
+<td colspan="2"><p>訳語の最大長。現在未参照。</p>
+<p>10,000 : Ver.6.00</p>
+<p>262,144 : Ver.6.10</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>block_size</p></td>
+<td><p>ushort</p></td>
+<td colspan="2"><p>データブロックの１ブロックの長さを示す。</p>
+<p>1,024に固定</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>index_block</p></td>
+<td><p>ushort</p></td>
+<td colspan="2"><p>インデックスのサイズをブロック数であらわしたもの。</p>
+<p>１ブロックは1,024バイト</p>
+<p>インデックス部のサイズは、index_block * block_sizeで求めること。
+このフィールドはNEWDIC,NEWDIC2と名前が同じでも扱いがまったく異なるので
+注意が必要。</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>header_size</p></td>
+<td><p>ushort</p></td>
+<td colspan="2"><p>ヘッダーのサイズ。1,024固定</p></td>
+</tr>
+<tr class="row-even"><td><p>index_size</p></td>
+<td><p>short</p></td>
+<td colspan="2"><p>未使用</p></td>
+</tr>
+<tr class="row-odd"><td><p>empty_block</p></td>
+<td><p>short</p></td>
+<td colspan="2"><p>未使用</p></td>
+</tr>
+<tr class="row-even"><td><p>nindex</p></td>
+<td><p>short</p></td>
+<td colspan="2"><p>未使用</p></td>
+</tr>
+<tr class="row-odd"><td><p>nblock</p></td>
+<td><p>short</p></td>
+<td colspan="2"><p>未使用</p></td>
+</tr>
+<tr class="row-even"><td><p>nword</p></td>
+<td><p>ulong</p></td>
+<td colspan="2"><p>登録単語数</p></td>
+</tr>
+<tr class="row-odd"><td><p>dicorder</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>見出語の登録順
+現在のPDICはコード順のみをサポート</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0</p></td>
+<td><p>コード順</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>1</p></td>
+<td><p>大文字・小文字同一視順</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>2</p></td>
+<td><p>辞書順</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>3</p></td>
+<td><p>降順</p></td>
+</tr>
+<tr class="row-even"><td><p>dictype</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>辞書の属性
+以下のフラグの組み合わせ</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x01</p></td>
+<td><p>バイナリの圧縮を行っている</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x08</p></td>
+<td><p>BOCU-1方式の圧縮を利用</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x10</p></td>
+<td><p><strong>Unicodeを使用している</strong></p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x20</p></td>
+<td><p>多国語辞書（いずれ削除）</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x40</p></td>
+<td><p>暗号化</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x80</p></td>
+<td><p>ツリービューモード用の辞書</p></td>
+</tr>
+<tr class="row-odd"><td><p>attrlen</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>属性長(１に固定)</p></td>
+</tr>
+<tr class="row-even"><td><p>os</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>使用OS</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x00</p></td>
+<td><p>DOS,Windows,OS/2(x86系), 改行はCR,LF</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x01</p></td>
+<td><p>Mac</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x02</p></td>
+<td><p>UNIX - SJIS系</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x03</p></td>
+<td><p>UNIX – EUC系</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td><p>0x04</p></td>
+<td><p>UNIX - JIS系</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td></td>
+<td><p>0x20</p></td>
+<td><p>BOCU-1 encoding</p></td>
+</tr>
+<tr class="row-odd"><td><p>olenumber</p></td>
+<td><p>long</p></td>
+<td colspan="2"><p>最新のOLEオブジェクト番号</p></td>
+</tr>
+<tr class="row-even"><td><p>dummy_lid</p></td>
+<td><p>10byte</p></td>
+<td colspan="2"><p>(予約領域)</p></td>
+</tr>
+<tr class="row-odd"><td><p>index_blkbit</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>インデックス部の物理ブロック番号のビット数(0:16bit,1:32bit)</p></td>
+</tr>
+<tr class="row-even"><td><p>dummy0</p></td>
+<td><p>byte</p></td>
+<td colspan="2"><p>(予約領域)</p></td>
+</tr>
+<tr class="row-odd"><td><p>extheader</p></td>
+<td><p>ulong</p></td>
+<td colspan="2"><p>拡張ヘッダーサイズ(バイト単位)</p></td>
+</tr>
+<tr class="row-even"><td><p>empty_block2</p></td>
+<td><p>long</p></td>
+<td colspan="2"><p>先頭空きブロック番号
+ない場合は-1(0xFFFFFFFF)</p></td>
+</tr>
+<tr class="row-odd"><td><p>nindex2</p></td>
+<td><p>ulong</p></td>
+<td colspan="2"><p>インデックス要素の数</p></td>
+</tr>
+<tr class="row-even"><td><p>nblock2</p></td>
+<td><p>ulong</p></td>
+<td colspan="2"><p>使用データブロック数</p></td>
+</tr>
+<tr class="row-odd"><td><p>cypt</p></td>
+<td><p>8byte</p></td>
+<td colspan="2"><p>暗号コード</p></td>
+</tr>
+<tr class="row-even"><td><p>update_count</p></td>
+<td><p>ulong</p></td>
+<td colspan="2"><p>辞書更新回数（LAN共有時に使用）</p></td>
+</tr>
+<tr class="row-odd"><td><p>dummy00</p></td>
+<td><p>4byte</p></td>
+<td colspan="2"><p>(予約領域)</p></td>
+</tr>
+<tr class="row-even"><td><p>dicident</p></td>
+<td><p>8byte</p></td>
+<td colspan="2"><p>辞書識別子（ランダムな８バイトの数値）</p></td>
+</tr>
+<tr class="row-odd"><td><p>derefid</p></td>
+<td><p>8byte</p></td>
+<td colspan="2"><dl class="simple">
+<dt>逆リファレンス用辞書識別子</dt><dd><p>Ver.6.10で廃案</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>dummy</p></td>
+<td><p>24byte</p></td>
+<td colspan="2"><p>ヘッダー部パディング</p></td>
+</tr>
+</tbody>
+</table>
+<p>※DicTypeのUnicode(UTF-16)用辞書ビットは立ちません</p>
+<div class="section" id="id10">
+<h4>3.4.1. 辞書識別子<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="newdic3">
+<h5>NEWDIC3<a class="headerlink" href="#newdic3" title="Permalink to this headline">¶</a></h5>
+<p>Version.5で追加された新しいヘッダー項目です。ランダムな８バイト（６４ビット）の数値が格納されます。この識別子は辞書新規作成時に与えられ、それ以降は原則として変更されません。この識別子は、ファイル名が変更されても同一の辞書であるかどうかの判断を必要とする場合に利用します。ただし、ファイルコピーで辞書を複製した場合は同一の識別子となるため、完全な識別方法として利用することはできません。</p>
+<p>※プログラミング上の注意※</p>
+<p>乱数の発生方法に注意してください。例えば、</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">srand</span><span class="p">(</span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">));</span> <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">8</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="n">dicident</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">rand</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>ですと、srand()だけで識別子が決まることになり、同じ時刻に作成した辞書は必ず同じ識別子になってしまいます。rand関数は乱数のように見えるだけであり、本当の乱数ではありません。</p>
+</div>
+</div>
+<div class="section" id="id11">
+<h4>3.4.2. 暗号化のセキュリティについて<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<p>暗号化のセキュリティレベルは、プログラミングと暗号理論の両方に精通していれば解読可能なレベルです。</p>
+<p>暗号化方式は輸出規制に制限されるような方式を使用していません。</p>
+<p>なお、この暗号化はいかなる条件であっても安全であることを保証するものではありません。あくまで作者自身の個人的な判断による能力に基づいた予測に過ぎません。</p>
+<p>※2008年時点で暗号化を実装しているものはありません。</p>
+</div>
+</div>
+<div class="section" id="id12">
+<h3>3.5. 拡張ヘッダー部<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>ヘッダー部のextheaderがゼロ以外の場合、拡張ヘッダーが存在します。拡張ヘッダー部はヘッダー部の直後に配置されます。</p>
+<p>extheaderではバイト単位でサイズを指定できますが、1,024バイト単位でなければなりません。1,024バイト単位に満たない部分はゼロでパディングされます。（PDICは1,024バイト単位でなくても動作するはずですが、効率が悪くなります）</p>
+<div class="section" id="id13">
+<h4>3.5.1.  拡張ヘッダー部の構成<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 43%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>サイズ</p></th>
+<th class="head"><p>タグ名</p></th>
+<th class="head"><p>データ</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>２バイト</p></td>
+<td><p>可変長、 NULL終端</p></td>
+<td><p>可変長</p></td>
+</tr>
+</tbody>
+</table>
+<p>サイズはバイト単位で、タグ名とデータの合計サイズ。</p>
+<p>タグ名は英数字 _ - のみ使用可能。</p>
+<p>サイズがゼロの場合は拡張ヘッダーの終端。extheaderはこの終端までのサイズを示す。</p>
+<p>タグ名は最大40文字まで。</p>
+<p>タグ名の重複が可能。</p>
+<p>大文字・小文字を区別する。</p>
+<p>タグ名は自由に使えますが、pdic- で始まるタグ名はPDICで予約されています。</p>
+<p>拡張ヘッダー部は暗号化の対象になりません。必要な場合は個々のタグで対処する必要があります。</p>
+<p>タグ名は辞書の文字コードの種類と一致させる必要がありますが、データ部の文字列は自由です。</p>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>3.6. インデックス部<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>インデックス部ではデータ部の物理的な位置を管理しています。</p>
+<p>インデックス部は1,024バイト単位で可変長です。データがまったく登録されていない場合は、０バイトで、最大1,024×32,767＝32Mバイトまでです。インデックス部のサイズを制限するものはヘッダー部にあるインデックスブロック数(index_block)です。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 39%" />
+<col style="width: 25%" />
+<col style="width: 5%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>物理ブロック番号</p></th>
+<th class="head"><p>ブロック先頭の見出語</p></th>
+<th class="head"><p>-</p></th>
+<th class="head"><p>インデックス部の最後</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2バイト  or ４バイト</p></td>
+<td><p>可変長(BOCU-1)</p></td>
+<td><p>-</p></td>
+<td><p>4バイト</p></td>
+</tr>
+<tr class="row-odd"><td><p>0から始まる物理ブロック番号を示す</p></td>
+<td><p>NULL終端  (1byte)</p></td>
+<td><p>-</p></td>
+<td><p>NULL４バイト以上であらわす</p></td>
+</tr>
+</tbody>
+</table>
+<p>※物理ブロック番号のサイズはヘッダー部のindex_blkbitで判断します。</p>
+<p>物理ブロック番号とブロック先頭の見出語の対がいくつか並び、最後にインデックス部の最後を示す４バイト以上のNULLがあります。インデックス部は1,024バイト単位の可変長であるため、残りはNULLでパディングされています。</p>
+<p>物理ブロック番号とは、データ部のブロック番号であり、実際のディスク上の位置を示します。</p>
+<p>物理ブロック番号と見出語の組み合わせをインデックス要素と呼びます。このインデックス要素は、見出語のコード順に並びます。(ただし、ヘッダー部のdicorderがコード順でない場合は、この限りではない)
+見出語は、データ部の各ブロックの先頭の見出語をそのまま記憶します。</p>
+<p>　インデックス要素は先頭から論理ブロック番号という連続した番号をふります。(０～)ただし、これはプログラム処理上に便宜上用いる値ですので、実際の辞書には存在しません。</p>
+<p>インデックス部の物理ブロック番号は、２バイトの場合と、４バイトの場合が存在します。どちらを使用するかは実装依存です。PDICではすべての物理ブロック番号が16bitで表せられる場合は２バイトを、それ以上の場合は４バイトを使用しています。物理ブロック番号が16bitを超える場合というのは、1,024×65535=64Mバイト以上ということですので、ほとんどの場合は２バイトで十分であるといえます。このフィールドが２バイトであるか４バイトであるかは、ヘッダー部のindex_blkbitで示します。</p>
+<div class="section" id="id15">
+<h4>3.6.1.  物理ブロック番号からディスク上の位置を求める<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<p>物理ブロック番号からディスク上の位置へ変換するには以下の式を用います。</p>
+<p>(ディスク上の位置)=(ヘッダーサイズ)+(拡張ヘッダーサイズ)+(インデックスサイズ)+(データブロック長)*(物理ブロック番号)</p>
+<p>通常、各項目の値は次のとおりになります。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 57%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>ヘッダーサイズ</p></td>
+<td><p>1,024byte</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張ヘッダーサイズ</p></td>
+<td><p>0byte以上</p></td>
+</tr>
+<tr class="row-odd"><td><p>インデックスサイズ</p></td>
+<td><p>index_block * block_size</p></td>
+</tr>
+<tr class="row-even"><td><p>データブロック長</p></td>
+<td><p>block_size</p></td>
+</tr>
+</tbody>
+</table>
+<p>インデックス部で注意するところは可変長である点です。インデックス部のすぐ後ろがデータ部ですから、インデックス部を拡張したい場合、データ部の先頭のブロックを移動する必要があることです。さらに、データ部のオフセットがずれたり、物理ブロック番号もずれます。そして最悪なことに空きブロックのリンクは絶対物理ブロック番号でリンクしているため、すべて更新する必要があります。PDICの場合は、空きブロックを必要とするとき、すべての空きブロックリンクを読み込み、メモリ内部で相対物理ブロック番号による片方向リンクリストで管理するため、あまり気にすることなく実装できています。通常、インデックスの更新処理が必要なときは、空きブロックリンクをたどることが多い、ということから重要な問題ではないと思います。また、プログラム内部で絶対物理ブロック番号を保持している場合も、それらをすべて変更しなければならないということも忘れないでください。</p>
+<ul class="simple">
+<li><p>この仕様は、PDICのプログラムを簡略化するためです。本当は相対物理ブロック番号のほうがsmartであるのは間違いないのですが…。</p></li>
+<li><p>空きブロックリンクはたとえ相対物理ブロック番号でやっていたとしても、一括登録や一括削除では問題が生じます。何が原因かというと、空きブロックが多数出ることが予想されることです。そうなると、空きブロック更新だけで、かなり時間がかかります。PDICではそんなことはない？実はPDICでは、あるタイミングで空きブロックを無くす処理をやっています。この処理は空きブロックをなくすと同時に辞書サイズも小さくしてくれます。この処理は「重そう」と思うかもしれませんが、意外と軽く、まとめてやるより、少しずつ暇があったら辞書を“簡単に”最適化したほうが速度、サイズともに有利であることがわかりました。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id16">
+<h3>3.7. データ部<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>データ部には見出語、訳語、用例などの実際のデータが記憶されています。</p>
+<p>データ部の構成には大きく分けて２種類有ります。見出語と訳語のみでよい場合と、それ以外の用例、発音記号などを必要とする場合があります。便宜上、前者を基本構成、後者を拡張構成と呼びますが、拡張構成は基本構成に拡張部を付け加えた形になっています。基本構成と拡張構成の区別はこれから述べる見出語属性のフラグによって判断します。</p>
+<p>データ部には見出語、訳語、用例などの実際のデータが記憶されています。データ部は1,024バイト単位で管理され、これをブロックと呼びます。</p>
+<p>データ部の種類には「使用ブロック」と「空きブロック」があります。空きブロックはヘッダー部のempty_block2が先頭空きブロックの物理ブロック番号を示し、以降、片方向リストで空きブロックをリンクしています。空きブロックが存在しない場合、empty_block2は0xfffffffで、空きブロックリンクの最終ブロックのリンク先も0xffffffffになっています。<em>リンク先は、物理ブロック番号で示しています。</em>ちなみに、PDICの最適化処理というのは、空きブロックを無くし、データブロックを単語順に並び換える処理を行っています。</p>
+<p>使用ブロックの構成には大きく分けて２種類有ります。見出語と訳語のみでよい場合と、それ以外の用例、発音記号などを必要とする場合があります。便宜上、前者を基本構成、後者を拡張構成と呼びますが、拡張構成は基本構成に拡張部を付け加えた形になっています。基本構成と拡張構成の区別はこれから述べる見出語属性のフラグによって判断します。</p>
+<div class="section" id="id17">
+<h4>3.7.1. 空きブロック<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 56%" />
+<col style="width: 44%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>NULL</p></td>
+<td><p>空きブロックリンク情報</p></td>
+</tr>
+<tr class="row-even"><td><p>2バイト</p></td>
+<td><p>4バイト</p></td>
+</tr>
+<tr class="row-odd"><td><p>空きブロックであることを示す0x0000が入っている</p></td>
+<td><p>次の空きブロックへの物理ブロック番号</p></td>
+</tr>
+</tbody>
+</table>
+<p>空きブロックはヘッダー部のempty_block2の示すブロックから、空きブロックリンク情報をもとに片方向リンクしています。最終空きブロックの空きブロックリンク情報は0xffffffffです。</p>
+<p>空きブロックは連結ブロックのある使用ブロックとは異なり、必ず１ブロック単位でリンクされて構成されています。(PDICの場合1,024バイトが1ブロック)</p>
+<p>リンクは物理的にデータブロック部の先頭から後ろに順番に並んでいる必要はありません。(たとえば、空きブロック番号100の次のリンクが30であってもかまわない)</p>
+<p>インデックス部の拡張に伴う、先頭データブロックの移動のときには、empty_block2も変わることに注意してください。</p>
+<p>PDICでは、使用ブロックを空きブロックにする際、先頭の６バイトを変更する以外は、NULLパディングなどをしません。これは、空きブロックを使用ブロックに復活させることを考えてのことですが、実際は利用していません。つまり、バイナリエディターで空きブロックを見てもきれいにNULLパディングされていません。</p>
+</div>
+<div class="section" id="id18">
+<h4>3.7.2. データブロック構成<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 25%" />
+<col style="width: 10%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>使用ブロック数</p></th>
+<th class="head"><p>フィールドデータ
+(複数)</p></th>
+<th class="head"><p>フィールドデータ</p></th>
+<th class="head"><p>終端</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2バイト</p></td>
+<td><p>可変長</p></td>
+<td></td>
+<td><p>2バイト or ４バイト</p></td>
+</tr>
+<tr class="row-odd"><td><p>０の場合は空きブロックであることを示す。</p></td>
+<td><p>１つのフィールドに１つの見出語が登録される</p></td>
+<td></td>
+<td><p>データブロックの最後をNULL2バイト or 4バイト以上で示す。</p></td>
+</tr>
+<tr class="row-even"><td><p>最上位ビットはフィールド内のフィールド長のサイズを示す</p></td>
+<td></td>
+<td></td>
+<td><p>2バイトか4バイトかはフィールド長のサイズによる</p></td>
+</tr>
+</tbody>
+</table>
+<p>PDICの場合、最小ブロック単位は1,024バイトですが、それを複数連結することによって、大きいデータを登録できるようにしています。使用ブロック数というのはこの連結の個数を示しています。</p>
+<p>使用ブロック数は、最大32,767個であるため、32,767×1,024=32Mバイトまで。ただし、最上位ビットはこれから述べるフィールド内のフィールド長のサイズを示します。最上位ビットが0の場合は、フィールド長は2バイトであり、最上位ビットが1の場合は、フィールド長が4バイトであることを示しています。</p>
+<p><em>フィールド長が４バイトである場合は、１つのインデックスに対して１つのデータを割り当てなければなりません。</em>つまり、１つのデータブロックには１つのデータしか登録できません。効率を考え、64Kバイト以下のデータは２バイトのフィールド長を、64Kバイト以上のデータは4バイトのフィールド長をそれぞれ使用するようにします。また、フィールド長が４バイトの場合、それに合わせてこれから述べるリンクデータのデータ長を表わすビット数も２バイトから４バイトに変わることも注意してください。</p>
+</div>
+<div class="section" id="id19">
+<h4>3.7.3. データ部基本構成<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<p>次表に１つの見出し語の基本構成を示す。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 19%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><ul class="simple">
+<li><p>見出語部の圧縮している長さ<strong>(バイト単位)</strong>を示す</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><ul class="simple">
+<li><p>0xFFである場合はリファレンス登録語</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>圧縮長を除いた残りの見出語部分
+BOCU1 encoding</p></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>無し</strong></p></td>
+<td><p>BOCU1 encoding</p></td>
+</tr>
+</tbody>
+</table>
+<p>見出語部は、見出語キーと見出表示部に分かれる。</p>
+<p>“見出語キーt見出表示部”</p>
+<p>となる。見出表示部を省略した場合は、見出語キーと見出表示部は同一であるとして扱う。</p>
+<p>→期待したとおりの順番にソートされないため廃案</p>
+<p>訳語部、用例部、オブジェクトタイトルなどテキストを使用する部分はすべてBOCU
+encodingを用いる。</p>
+<p>見出語部は圧縮されています。圧縮は同一のデータブロックにおいて、直前の見出語との差分を取ることによって行っています。例えば、データブロックの先頭の見出語がABCであり、次の見出語がABDEFだった場合は、２番目の見出語部に入る文字列はABDEFではなく、DEFとなり、圧縮長は２となります。さらにABDGという見出語が続いた場合は、圧縮長が３となり、見出語部に入る文字列はGとなります。</p>
+<p>データブロック先頭の見出語の圧縮長は必ず零になります。</p>
+<p><strong>注意</strong>：ツリービュー用の辞書では、圧縮長は０、見出語はNULL終端のみとなっています。</p>
+<p>見出語圧縮の例</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>見出語</p></th>
+<th class="head"><p>圧縮長</p></th>
+<th class="head"><p>圧縮後の見出語</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1番目</p></td>
+<td><p>ABC</p></td>
+<td><p>0</p></td>
+<td><p>ABC</p></td>
+</tr>
+<tr class="row-odd"><td><p>2番目</p></td>
+<td><p>ABDEF</p></td>
+<td><p>2</p></td>
+<td><p>DEF</p></td>
+</tr>
+<tr class="row-even"><td><p>3番目</p></td>
+<td><p>ABDGD</p></td>
+<td><p>3</p></td>
+<td><p>GD</p></td>
+</tr>
+<tr class="row-odd"><td><p>4番目</p></td>
+<td><p>AGDE</p></td>
+<td><p>1</p></td>
+<td><p>GDE</p></td>
+</tr>
+</tbody>
+</table>
+<p>データ部（リファレンス登録語）：→Ver.6.10で廃案</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 15%" />
+<col style="width: 73%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)</p>
+<p>ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さ<strong>(バイト単位)</strong>を示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0xFF</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>圧縮長を除いた残りの見出語部分</p>
+<p>BOCU1 encoding</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>リファレンス語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>この見出語が参照する別の見出し語</p>
+<p>見出し語の表示部と同じ場合は省略される。</p>
+<p>複数のリファレンス語を並べることが可能。</p>
+<p>BOCU1 encoding</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id20">
+<h4>3.7.4. 拡張構成<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 19%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から拡張終了までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さを示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>あり</strong></p></td>
+<td><p>BOCU-1で圧縮されている場合は２バイト単位でアライメントをとる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性1</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Reserved</p></td>
+<td><p>[STRIKEOUT:1バイト]</p></td>
+<td><p>0x00</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張内容1</p></td>
+<td><p>可変長</p></td>
+<td><p>拡張属性によって内容は異なる</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張属性2</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Reserved</p></td>
+<td><p>[STRIKEOUT:1バイト]</p></td>
+<td><p>0x00</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容2</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張終了</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x80</p></td>
+</tr>
+<tr class="row-even"><td><p>[STRIKEOUT:Reserved]</p></td>
+<td><p>[STRIKEOUT:1バイト]</p></td>
+<td><p>0x00</p></td>
+</tr>
+</tbody>
+</table>
+<p>———————————- 旧形式</p>
+</div>
+<div class="section" id="id21">
+<h4>3.7.5. 拡張構成<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から拡張終了までのバイト単位の長さ(フィールド長、圧縮長は含めない)</p>
+<p>ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さを示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>前述</p></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>あり</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性1</p></td>
+<td><p>1バイト</p></td>
+<td><p>後述</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容1</p></td>
+<td><p>可変長</p></td>
+<td><p>拡張属性によって内容は異なる</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性2</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容2</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張終了</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x80</p></td>
+</tr>
+</tbody>
+</table>
+<p>拡張部の特徴としては、バイナリデータ、データの圧縮などが可能になっています。また、拡張属性にはまだ未使用のフラグが残っているため、今後更に拡張される可能性があります。</p>
+<div class="section" id="id22">
+<h5>拡張属性<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h5>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>数値</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>0x01</p></td>
+<td><p>用例</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x02</p></td>
+<td><p>発音記号</p></td>
+</tr>
+<tr class="row-even"><td><p>0x03</p></td>
+<td><p>未定義</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x04</p></td>
+<td><p>リンクデータ</p></td>
+</tr>
+<tr class="row-even"><td><p>0x05～0x0f</p></td>
+<td><p>未定義</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x10</p></td>
+<td><p>バイナリデータフラグ</p></td>
+</tr>
+<tr class="row-even"><td><p>0x20</p></td>
+<td><p>未定義</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x40</p></td>
+<td><p>圧縮フラグ</p></td>
+</tr>
+<tr class="row-even"><td><p>0x80</p></td>
+<td><p>拡張終了</p></td>
+</tr>
+</tbody>
+</table>
+<p>拡張属性は下位4bitが項目の種類、上位4bitが何らかのフラグであることを示します。</p>
+<p>フラグによってさらに、拡張部の構成は異なります。</p>
+<p>拡張部の構成は非常に複雑です。もし、すべての拡張部を必要としない場合は、0x10のフラグだけを見て、スキップすることができます。つまり、0x10がなければNULL終端テキストであると判断し、0x10がある場合は指定されたサイズだけスキップすれば済みます。</p>
+</div>
+</div>
+<div class="section" id="id23">
+<h4>3.7.6. 拡張構成<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から拡張終了までのバイト単位の長さ(フィールド長、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さを示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>前述</p></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>あり</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性1</p></td>
+<td><p>1バイト</p></td>
+<td><p>後述</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容1</p></td>
+<td><p>可変長</p></td>
+<td><p>拡張属性によって内容は異なる</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性2</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容2</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張終了</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x80</p></td>
+</tr>
+</tbody>
+</table>
+<p>拡張部の特徴としては、バイナリデータ、データの圧縮などが可能になっています。また、拡張属性にはまだ未使用のフラグが残っているため、今後更に拡張される可能性があります。</p>
+</div>
+<div class="section" id="id24">
+<h4>3.7.7. 拡張部の構成１-バイナリデータフラグ、圧縮フラグ、拡張終了フラグがない場合<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h4>
+<p>この場合、NULL終端のあるテキストデータであると判断します。</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 43%" />
+<col style="width: 24%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>拡張属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x00～0x0f</p></td>
+</tr>
+<tr class="row-even"><td><p>テキストデータ</p></td>
+<td><p>NULL終端<strong>有り</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>圧縮されていない用例や、発音記号はこのフォーマットです。</p>
+<div class="section" id="id25">
+<h5>拡張部の構成２-バイナリデータフラグのみがある場合<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h5>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 29%" />
+<col style="width: 55%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>拡張属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x10～0x1f</p></td>
+</tr>
+<tr class="row-even"><td><p>サイズ</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>拡張データの長さをバイト単位で示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張データ</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>圧縮データや、リンクデータがこのフォーマットになります。</p>
+</div>
+<div class="section" id="id26">
+<h5>拡張部の構成３-圧縮フラグありの場合<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h5>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 19%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>拡張属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x50～0x5f</p></td>
+</tr>
+<tr class="row-even"><td><p>サイズ</p></td>
+<td><p>2バイトor4バイト</p></td>
+<td><p>非圧縮長から圧縮データの最後までのバイト単位の長さを示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>非圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>非圧縮データのバイト単位の長さ</p></td>
+</tr>
+<tr class="row-even"><td><p>非圧縮データ</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮ヘッダー</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>圧縮データ</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>圧縮ありでは、必ずバイナリデータフラグが必要です。したがって、0x50～という拡張属性になります。</p>
+<p>非圧縮長は1バイトであらわすため、255バイトを超える長さにはできないことに注意してください。</p>
+<p>圧縮ヘッダーにはリンクデータの一部の内容が入ることがあります。(拡大率、アスペクト比など)</p>
+<p>圧縮内容のフォーマットは省略</p>
+</div>
+</div>
+<div class="section" id="id27">
+<h4>3.7.8. リンクデータの構成<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h4>
+<p>拡張属性にリンクデータがある場合はさらにフォーマットが定められています。</p>
+<div class="section" id="id28">
+<h5>リンクデータの構成1-非圧縮時<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h5>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 53%" />
+<col style="width: 12%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>拡張属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x14</p></td>
+</tr>
+<tr class="row-even"><td><p>サイズ</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>リンクタイプ</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>ID</p></td>
+<td><p>4バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>タイトル</p></td>
+<td><p>可変長NULL終端有り</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>データ部</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>リンクタイプ</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 58%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>数値</p></td>
+<td><p>意味</p></td>
+</tr>
+<tr class="row-even"><td><p>0x00</p></td>
+<td><p>未定義</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x01</p></td>
+<td><p>OLE</p></td>
+</tr>
+<tr class="row-even"><td><p>0x02</p></td>
+<td><p>ファイルリンク</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x03</p></td>
+<td><p>音声データ</p></td>
+</tr>
+<tr class="row-even"><td><p>0x04</p></td>
+<td><p>DDB(暫定)</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x05</p></td>
+<td><p>DIB(暫定)</p></td>
+</tr>
+<tr class="row-even"><td><p>0x06</p></td>
+<td><p>RTF(暫定)</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x07～0xff</p></td>
+<td><p>未定義</p></td>
+</tr>
+</tbody>
+</table>
+<p>リンクデータの構成2-圧縮時</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 20%" />
+<col style="width: 58%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>拡張属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x14</p></td>
+</tr>
+<tr class="row-even"><td><p>サイズ</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>非圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>リンクタイプからタイトルの最後までのバイト単位の長さ</p></td>
+</tr>
+<tr class="row-even"><td><p>リンクタイプ</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>ID</p></td>
+<td><p>4バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>タイトル</p></td>
+<td><p>可変長NULL終端有り</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮ヘッダー</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>データ部(圧縮データ)</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>さらにさらに、リンクデータのデータ部はリンクタイプによって異なります。</p>
+<p>ここではデータ部のみを示します。</p>
+</div>
+<div class="section" id="ole">
+<h5>リンクデータの構成１-OLEデータの場合<a class="headerlink" href="#ole" title="Permalink to this headline">¶</a></h5>
+<p>省略</p>
+</div>
+<div class="section" id="id29">
+<h5>リンクデータの構成２-ファイルリンクデータの場合<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h5>
+<p>省略</p>
+<p>例：見出語、訳語、用例がある場合</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 24%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>訳語</p></td>
+<td><p>可変長NULL終端無</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>拡張属性(用例)</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>用例</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>拡張終了</p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="section" id="ver-6-10">
+<h3>3.8.  リファレンス登録語→Ver.6.10で廃案<a class="headerlink" href="#ver-6-10" title="Permalink to this headline">¶</a></h3>
+<p>Ver.6から新たに追加された機能である。たとえば、</p>
+<p>take A for BAをBだと思う</p>
+<p>という見出し語および訳語を通常の登録語として登録し、リファレンス登録語として、</p>
+<p>forttake A for B</p>
+<p>を登録する。</p>
+<p>“for”でインクリメンタルサーチを行うと、”forttake A for
+B”が一覧表示に現れ、実際に表示される内容は</p>
+<p>take A for BAをBだと思う</p>
+<p>となる。</p>
+<p>さらにこの登録語を編集すると”take A for
+B”という見出し語の訳語が編集されることになる。</p>
+<p>もし、見出し語”take A for B”を削除した場合は、”forttake A for
+B”のリファレンスはリンク切れとなり、エラーが表示される。</p>
+<p>take A for B&lt;&lt;reference link error&gt;&gt;</p>
+<p>エラーの対処方法はアプリに依存。</p>
+</div>
+<div class="section" id="id30">
+<h3>3.9. 逆リファレンス辞書→Ver.6.10で廃案<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<p>辞書編集者が主に利用する機能である。</p>
+<p>“take A for
+B”の”for”を”as”に変更したい、という場合、これまで述べた辞書形式では辞書をすべて検索しなければならず、非常に時間がかかる（辞書が大きい場合）。それを高速化するための逆リファレンス辞書である。</p>
+<ul class="simple">
+<li><p>辞書形式はPDIC辞書形式(Ver.6)</p></li>
+<li><p>必要な場合のみ作成する</p></li>
+<li><p>作成されたら本辞書と常に整合性を保つ</p></li>
+<li><p>整合性をチェックするために、ヘッダー部の逆リファレンス辞書識別子を用いる</p></li>
+<li><p>不整合と判断された場合は、最初から作り直す</p></li>
+<li><p>データ形式はリファレンス登録語と同じ</p></li>
+</ul>
+</div>
+<div class="section" id="pdic">
+<h3>3.10. PDICにおけるデータブロックの分割方法<a class="headerlink" href="#pdic" title="Permalink to this headline">¶</a></h3>
+<p>ここでは、辞書の制御で一番難しい、データブロックの分割方法について述べます。この手のデータベースを扱ったことがない方にはピンと来ないかもしれませんが、この処理は登録の速度や格納率に大きく影響します。</p>
+<p>辞書ファイルのサイズを抑えるためには、データブロックいっぱいにデータを詰め込み、インデックス部をなるべく小さくすることにあります。</p>
+<p>辞書に見出語を登録する際に、見出語が昇順で順番に登録される場合は、かなり高い格納率でデータブロックを埋めていくことができますが、下手をすると未使用領域が大きくなってしまいます。NEWDIC2までは、この点に問題があり、色んな圧縮を用いて辞書のサイズを小さくしても、生のテキストデータより若干大きくなっていました。</p>
+<p>また、逆にデータブロックを大きくしすぎると、検索速度が落ちてしまいます。速度とサイズのトレードオフが重要です。</p>
+<div class="section" id="id31">
+<h4>3.10.1. データブロックの分割の基準 - 開発者メモ<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h4>
+<p>この基準を決めるには、検索速度と辞書サイズとのバランスを考える必要があります。</p>
+<p>辞書の検索速度はインデックス部とデータ部の検索で決まります。インデックス部はB-treeで検索、データブロック部は逐次検索であるので、
+:math:` mathcal{O}(log Ni+ bar{Nd})`  のオーダで検索されます(PDICでは、インデックス部がメモリ上、データ部がディスク上にあるのでこんなに簡単ではないのですが)。
+ここで、 <span class="math">Ni</span>  はインデックス要素の個数、 <span class="math">\bar{Nd}</span>  は１つのデータブロックに入っている見出語の個数の平均、logの基底は2です。
+<span class="math">\log Ni</span> は小さいので、 <span class="math">\bar{Nd}</span> によって、検索速度、辞書サイズに影響します。( <span class="math">Ni</span> bar{Nd}` に依存する)</p>
+<p>また、辞書サイズTは次のような式で求められます。</p>
+<div class="math">
+<p><span class="math">T=\bar{S} \mathsf X Ni + \bar{Ni}\mathsf X Ni</span></p>
+</div><p><span class="math">\bar{S}</span> は１つのデータブロックのサイズの平均、 <span class="math">\bar{Li}</span> はインデックスの要素の平均長です。ちなみにデータブロックの平均格納率
+<span class="math">\bar{R}</span> は</p>
+<div class="math">
+<p><span class="math">\bar{R}=\frac{\bar{Nd}\mathsf X \bar{Ld}}{\bar{S}\mathsf X Ni}</span></p>
+</div><p>です。</p>
+<p><span class="math">\bar{Ld}</span> は、１つの単語の平均長です(単語といっても、訳語などすべてのデータを含め、見出語圧縮や属性、フィールド長なども含めています)。</p>
+<p>ここで、整理してみますと、</p>
+<ul class="simple">
+<li><p><span class="math">\bar{Nd}</span> は小さいほうが検索が速い</p></li>
+<li><p><span class="math">\bar{R}</span> は大きいほうが辞書サイズが小さくなる</p></li>
+</ul>
+<p><span class="math">\bar{R}</span> は処理の結果得られるものと考えると(分割の基準というより、分割時の処理の仕方といえるので)、<span class="math">\bar{Nd}</span> の制御が非常に重要となります。</p>
+<p>次に、この <span class="math">\bar{Nd}</span> は小さいほうがよいわけですが、小さすぎるとインデックス部が大きくなってしまい、辞書の使用効率の低下、メモリの使用量の増加、下手をするとインデックス部がいっぱいになったり、インデックス部だけでディスクが満杯になる可能性があります。
+また、この <span class="math">\bar{Nd}</span> は常に一定値ではなく、辞書の大きさ(登録単語数)に依存したほうが良いと考えられます。
+それは、<span class="math">\log Ni</span> と <span class="math">\bar{Nd}</span> との関係を一定にするためです。つまり、</p>
+<div class="math">
+<p><span class="math">\log Ni = \alpha\bar{Nd}</span></p>
+</div><p>(αは一定値) という関係式で考え、登録単語数を <span class="math">Nr</span> とすると、</p>
+<div class="math">
+<p><span class="math">\bar{Nd}\mathsf X Ni
+= \bar{Nd} \mathsf X 2^{\alpha\bar{Nd}}</span></p>
+</div><p>となるように分割を制御します。</p>
+<p>なお、αの値は実際のプログラミングに依存するので経験に依存します。</p>
+<p>もう一つここで考慮しなければならないのは、<span class="math">Nr</span> が一定値ではなく、変動値であるという点です。
+しかし、これはオーダレベルの話ではないので、<span class="math">\alpha</span> に含まれるものとして考えても問題ないと思います。
+(まてよ、αに小数点は使えないなぁ…(^^;)</p>
+<p>次に、単語の長さ <span class="math">Ld</span> を無視してきましたが、この項は理論式には現れないものの、
+実際には検索速度に影響を与えます。
+つまり、<span class="math">Ld</span> が非常に大きくなると、ディスクへのアクセス時間(など)が長くなり、これがミスヒットした場合のペナルティが大きくなるためです。しかし、これもプログラムに依存する値なので、詳しくは述べません。</p>
+<p>結論としては、</p>
+<ul class="simple">
+<li><p>１つのデータブロックの長さが <span class="math">\bar{Nd}</span> 未満であったらブロック拡張</p></li>
+<li><p>１つのデータブロックの長さが <span class="math">\bar{Nd}</span> を超えたらブロック分割</p></li>
+</ul>
+<p>とします。ただし、 <span class="math">\bar{Nd}</span> 未満であっても、データブロックの長さが <span class="math">Ld</span> に関係した値を超えた場合も分割するとします。逆に、 <span class="math">\bar{Nd}</span> 以上であっても、最小ブロック単位以下であったら分割しません(分割すると格納率が低下するため)。</p>
+<p>　ちなみに、PDICではαを1/16(かな？)にしています。この値はブロックを分割したときの理想値にしなければならないことに注意しなければなりません。</p>
+</div>
+<div class="section" id="id32">
+<h4>3.10.2. データブロックの分割方法<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h4>
+<p>前項で分割の基準が決まったので、次は分割方法です。ここで重要なのはデータブロックの平均格納率です。格納率を向上させるために、データブロック分割点は格納率が最も良くなるところにすればよいことになります。</p>
+<p>これで実際のプログラミングには入れるわけですが、このブロック分割は非常に厄介な処理です。もし、登録プログラムを作成される方は、以上の内容を十分理解し、どのような変更を行ったら辞書のどの部分に影響を与えるのか、よく考えながらプログラミングされてください。まず、プログラムの仕様作成で普段の２倍の時間をかけ、一点の曇りのないものに仕上げ、それから普段の２倍の時間をかけて慎重にプログラミングを行ってください。それでも、通常のプログラムの数倍のバグが出てきます。(作者もここをしっかり押さえずにやっていたら、デバッグに恐ろしいほどの時間がかかりました(^^;;)。とにかく、いろんな条件や場合分けが存在しています。</p>
+</div>
+</div>
+</div>
+<div class="section" id="unicode-ver-5-00">
+<h2>4. Unicode辞書 Ver.5.00 の構造<a class="headerlink" href="#unicode-ver-5-00" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id33">
+<h3>4.1. データブロック部<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<p>基本構成</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 21%" />
+<col style="width: 66%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-even"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さ(文字単位)を示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>圧縮してある</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>後述</p></td>
+</tr>
+<tr class="row-odd"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>無し</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="id34">
+<h4>4.1.1 拡張構成<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト or 4バイト</p></td>
+<td><p>見出語から拡張終了までのバイト単位の長さ(フィールド長、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さを示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td><p>前述</p></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>あり</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性1</p></td>
+<td><p>1バイト</p></td>
+<td><p>後述</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容1</p></td>
+<td><p>可変長</p></td>
+<td><p>拡張属性によって内容は異なる</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性2</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容2</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張終了</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x80</p></td>
+</tr>
+</tbody>
+</table>
+<p>拡張部の特徴としては、バイナリデータ、データの圧縮などが可能になっています。また、拡張属性にはまだ未使用のフラグが残っているため、今後更に拡張される可能性があります。</p>
+</div>
+</div>
+</div>
+<div class="section" id="unicode-bocu-hyper-ver-5">
+<h2>5. Unicode(BOCU) 辞書 (Hyper辞書形式 Ver.5)<a class="headerlink" href="#unicode-bocu-hyper-ver-5" title="Permalink to this headline">¶</a></h2>
+<p>データ部：</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 19%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>フィールド長</p></td>
+<td><p>2バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-even"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さ<strong>(バイト単位)</strong>を示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>圧縮長を除いた残りの見出語部分
+BOCU1 encoding</p></td>
+</tr>
+<tr class="row-odd"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>無し</strong></p></td>
+<td><p>BOCU1 encoding</p></td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple">
+<li><p>訳語部、用例部、オブジェクトタイトルなどテキストを使用する部分はすべてをBOCU
+encodingを用いる。</p></li>
+<li><p>見出語属性の位置が異なる（見出語属性が見出語圧縮長の直後に位置している）</p></li>
+</ol>
+</div>
+<div class="section" id="unicode-utf-8">
+<h2>6. Unicode(UTF-8) 辞書<a class="headerlink" href="#unicode-utf-8" title="Permalink to this headline">¶</a></h2>
+<p>データ部：</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 19%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>フィールド長</p></td>
+<td><p>2バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-even"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さ<strong>(バイト単位)</strong>を示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td><p>圧縮長を除いた残りの見出語部分</p></td>
+</tr>
+<tr class="row-odd"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>無し</strong></p></td>
+<td><p>BOCU-1で圧縮</p></td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple">
+<li><p>見出語部はUTF-8のコードをそのまま使用する（BOCU-1による圧縮は行わない）。</p></li>
+<li><p>訳語部、用例部、オブジェクトタイトルなどテキストを使用する部分はすべてをBOCU-1(Binary-Order
+Compression for Unicode)による圧縮を行う。(BOMは付加しない)</p></li>
+<li><p>フィールド部が異なる（見出語属性が見出語圧縮長の直後に位置している）</p></li>
+</ol>
+</div>
+<div class="section" id="unicode-utf-16">
+<h2>7. Unicode(UTF-16)対応辞書<a class="headerlink" href="#unicode-utf-16" title="Permalink to this headline">¶</a></h2>
+<p>データ部</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 19%" />
+<col style="width: 69%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>フィールド長</p></td>
+<td><p>2バイト</p></td>
+<td><p>見出語から訳語の最後までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-even"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さ<strong>(文字単位)</strong>を示す</p></td>
+</tr>
+<tr class="row-odd"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>見出語</p></td>
+<td><p>可変長NULL終端
+(Unicode)</p></td>
+<td><p>圧縮してある</p></td>
+</tr>
+<tr class="row-odd"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>無し</strong>
+(Unicode)</p></td>
+<td><p>BOCU-1で圧縮されている場合は２バイト単位でサイズのアライメントをとる。</p></td>
+</tr>
+</tbody>
+</table>
+<p>発音記号、用例、オブジェクトタイトルも同様にUnicode NULL終端とする。</p>
+<p>拡張構成</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 20%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>サイズ</p></th>
+<th class="head"><p>備考</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>フィールド長</p></td>
+<td><p>2バイト</p></td>
+<td><p>見出語から拡張終了までのバイト単位の長さ(フィールド長、見出語属性、圧縮長は含めない)
+ここのサイズはデータブロックの先頭の最上位ビットによって決まる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>圧縮長</p></td>
+<td><p>1バイト</p></td>
+<td><p>見出語部の圧縮している長さを示す</p></td>
+</tr>
+<tr class="row-even"><td><p>見出語属性</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>見出語</p></td>
+<td><p>可変長NULL終端</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>訳語</p></td>
+<td><p>可変長NULL終端<strong>あり</strong></p></td>
+<td><p>BOCU-1で圧縮されている場合は２バイト単位でアライメントをとる。</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張属性1</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Reserved</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x00</p></td>
+</tr>
+<tr class="row-odd"><td><p>拡張内容1</p></td>
+<td><p>可変長</p></td>
+<td><p>拡張属性によって内容は異なる</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張属性2</p></td>
+<td><p>1バイト</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Reserved</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x00</p></td>
+</tr>
+<tr class="row-even"><td><p>拡張内容2</p></td>
+<td><p>可変長</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>拡張終了</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x80</p></td>
+</tr>
+<tr class="row-even"><td><p>Reserved</p></td>
+<td><p>1バイト</p></td>
+<td><p>0x00</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>詳細な説明は省略</p></li>
+<li><p>現在のところ、フィールド長が４バイトになる場合は未定義です。</p></li>
+<li><p>バイナリデータの圧縮方式はShiftJIS辞書とは異なります。（詳細は省略）</p></li>
+<li><p>拡張内容がテキストである場合は、BOCU-1による圧縮を行います(DicTypeに0x08がある場合)</p></li>
+</ul>
+</div>
+<div class="section" id="id35">
+<h2>8. 履歴<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+<p>2007.7.2</p>
+<p>0.90版</p>
+</div>
+<div class="section" id="id36">
+<h2>9. 著作権<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
+<p>この文書の著作権はTaN <a class="reference external" href="mailto:sgm00353&#37;&#52;&#48;nifty&#46;ne&#46;jp">(sgm00353<span>&#64;</span>nifty<span>&#46;</span>ne<span>&#46;</span>jp)</a> にあります。</p>
+<p>この文書は内容を改変しない限り、フリーであり、再配布は自由です。</p>
+<p>この文書によって生じるいかなる損害の責任は負いません。</p>
+<p>この文書を元にソフトウェアを作成・配布することに許可は必要ありません。制限も一切ありません。</p>
+<p>この文書に従った辞書については著作権上の何の制限もありません。</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="README.html">About PDIC specification</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, Hiroshi Miura.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+    </div>
+  </body>
+</html>
